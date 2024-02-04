@@ -1,0 +1,8 @@
+<li class="${completed} ${editing}">
+	<div class="view">
+		<input class="toggle" type="checkbox" #{checked} />
+		<label>${todo.title}</label>
+		<button class="destroy"></button>
+	</div>
+	#{edit}
+</li>
