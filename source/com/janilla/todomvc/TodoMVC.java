@@ -24,8 +24,12 @@
 package com.janilla.todomvc;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
+import com.janilla.http.HttpExchange;
 import com.janilla.http.HttpServer;
+import com.janilla.io.IO;
+import com.janilla.util.Lazy;
 import com.janilla.web.ApplicationHandlerBuilder;
 import com.janilla.web.Handle;
 import com.janilla.web.Render;
@@ -38,12 +42,18 @@ public class TodoMVC {
 
 		var s = new HttpServer();
 		s.setPort(8080);
-		{
-			var b = new ApplicationHandlerBuilder();
-			b.setApplication(a);
-			s.setHandler(b.build());
-		}
+		s.setHandler(a.getHandler());
 		s.run();
+	}
+
+	Supplier<IO.Consumer<HttpExchange>> handler = Lazy.of(() -> {
+		var b = new ApplicationHandlerBuilder();
+		b.setApplication(TodoMVC.this);
+		return b.build();
+	});
+
+	public IO.Consumer<HttpExchange> getHandler() {
+		return handler.get();
 	}
 
 	@Handle(method = "GET", uri = "/")

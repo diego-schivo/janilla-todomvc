@@ -23,7 +23,9 @@
  */
 module com.janilla.todomvc {
 
+	exports com.janilla.todomvc;
+
 	opens com.janilla.todomvc;
 
-	requires com.janilla;
+	requires transitive com.janilla;
 }
