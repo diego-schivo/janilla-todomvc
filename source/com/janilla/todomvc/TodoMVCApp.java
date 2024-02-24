@@ -34,11 +34,11 @@ import com.janilla.web.ApplicationHandlerBuilder;
 import com.janilla.web.Handle;
 import com.janilla.web.Render;
 
-@Render(template = "index.html")
-public class TodoMVC {
+@Render(template = "app.html")
+public class TodoMVCApp {
 
 	public static void main(String[] args) throws IOException {
-		var a = new TodoMVC();
+		var a = new TodoMVCApp();
 
 		var s = new HttpServer();
 		s.setPort(8080);
@@ -48,7 +48,7 @@ public class TodoMVC {
 
 	Supplier<IO.Consumer<HttpExchange>> handler = Lazy.of(() -> {
 		var b = new ApplicationHandlerBuilder();
-		b.setApplication(TodoMVC.this);
+		b.setApplication(this);
 		return b.build();
 	});
 
@@ -56,8 +56,8 @@ public class TodoMVC {
 		return handler.get();
 	}
 
-	@Handle(method = "GET", uri = "/")
-	public Object index() {
+	@Handle(method = "GET", path = "/")
+	public TodoMVCApp getApp() {
 		return this;
 	}
 }

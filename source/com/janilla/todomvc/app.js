@@ -24,9 +24,9 @@
 import TodoMVC from './TodoMVC.js';
 
 const l = () => {
-	const t = new TodoMVC();
-	t.selector = () => document.querySelector('.todoapp');
-	t.run();
+	const a = new TodoMVC();
+	a.selector = () => document.querySelector('.todoapp');
+	a.run();
 }
 
 document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', l) : l();

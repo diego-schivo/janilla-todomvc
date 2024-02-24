@@ -25,20 +25,16 @@ class ToggleAll {
 
 	selector;
 
-	rendering;
+	engine;
 
-	get todoMVC() {
-		return this.rendering.stack[0].object;
-	}
-
-	render = async (key, rendering) => {
-		switch (key) {
+	render = async engine => {
+		switch (engine.key) {
 			case undefined:
-				this.rendering = rendering.clone();
-				return await rendering.render(this, 'ToggleAll');
+				this.engine = engine.clone();
+				return await engine.render(null, 'ToggleAll');
 			
 			case 'checked':
-				const c = this.todoMVC.count;
+				const c = this.engine.todoMVC.count;
 				return c.completed === c.total ? 'checked' : '';
 		}
 	}
@@ -48,7 +44,7 @@ class ToggleAll {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.rendering.render(this, 'ToggleAll');
+		this.selector().outerHTML = await this.engine.render(null, 'ToggleAll');
 		this.listen();
 	}
 

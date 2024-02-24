@@ -25,7 +25,7 @@ class Filters {
 
 	selector;
 
-	rendering;
+	engine;
 
 	get items() {
 		return [
@@ -35,25 +35,25 @@ class Filters {
 		];
 	}
 
-	render = async (key, rendering) => {
-		switch (key) {
+	render = async engine => {
+		switch (engine.key) {
 			case undefined:
-				this.rendering = rendering.clone();
-				return await rendering.render(this, 'Filters');
+				this.engine = engine.clone();
+				return await engine.render(null, 'Filters');
 
 			case 'selected':
-				return rendering.object.page === location.hash.substring(2) ? 'selected' : '';
+				return engine.target.page === location.hash.substring(2) ? 'selected' : '';
 		}
 
-		if (rendering.stack.at(-2).key === 'items')
-			return await rendering.render(rendering.object[key], 'Filters-item');
+		if (engine.stack.at(-2).key === 'items')
+			return await engine.render(engine.target[engine.key], 'Filters-item');
 	}
 
 	listen = () => {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.rendering.render(this, 'Filters');
+		this.selector().outerHTML = await this.engine.render(null, 'Filters');
 		this.listen();
 	}
 }

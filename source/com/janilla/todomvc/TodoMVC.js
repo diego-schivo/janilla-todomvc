@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import Filters from './Filters.js';
-import Rendering from './Rendering.js';
+import RenderEngine from './RenderEngine.js';
 import TodoCount from './TodoCount.js';
 import TodoList from './TodoList.js';
 import ToggleAll from './ToggleAll.js';
@@ -54,13 +54,13 @@ class TodoMVC {
 	}
 
 	run = async () => {
-		const r = new Rendering();
-		this.selector().innerHTML = await r.render(this, 'TodoMVC');
+		const e = new CustomRenderEngine();
+		this.selector().innerHTML = await e.render(this, 'TodoMVC');
 		this.listen();
 	}
 
-	render = async key => {
-		switch (key) {
+	render = async engine => {
+		switch (engine.key) {
 			case 'toggleAll':
 				this.toggleAll = new ToggleAll();
 				this.toggleAll.selector = () => this.selector().querySelector('.toggle-all-container');
@@ -162,11 +162,25 @@ class TodoMVC {
 		this.todoList.refresh();
 		this.contentBlock();
 	}
-	
+
 	contentBlock = () => {
 		const e = this.selector();
 		const d = this.todos.length ? '' : 'none';
-		['.main', '.footer'].forEach(s => e.querySelector(s).style.display = d);
+		for (let s of ['.main', '.footer'])
+			e.querySelector(s).style.display = d;
+	}
+}
+
+class CustomRenderEngine extends RenderEngine {
+	
+	get todoMVC() {
+		return this.stack[0].target;
+	}
+
+	clone() {
+		const e = new CustomRenderEngine();
+		e.stack = [...this.stack];
+		return e;
 	}
 }
 

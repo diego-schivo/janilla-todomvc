@@ -27,22 +27,18 @@ class TodoList {
 
 	selector;
 
-	rendering;
+	engine;
 
 	todoItems;
 
-	get todoMVC() {
-		return this.rendering.stack[0].object;
-	}
-
-	render = async (key, rendering) => {
-		switch (key) {
+	render = async engine => {
+		switch (engine.key) {
 			case undefined:
-				this.rendering = rendering.clone();
-				return await rendering.render(this, 'TodoList');
+				this.engine = engine.clone();
+				return await engine.render(null, 'TodoList');
 
 			case 'todoItems':
-				const a = this.todoMVC;
+				const a = this.engine.todoMVC;
 				let t = a.todos;
 				if (a.filter)
 					t = t.filter(a.filter === 'active' ? (u => !u.completed) : (u => u.completed));
@@ -61,7 +57,7 @@ class TodoList {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.rendering.render(this, 'TodoList');
+		this.selector().outerHTML = await this.engine.render(null, 'TodoList');
 		this.listen();
 	}
 }

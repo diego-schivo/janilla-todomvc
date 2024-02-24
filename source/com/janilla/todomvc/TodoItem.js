@@ -27,25 +27,25 @@ class TodoItem {
 
 	todo;
 
-	rendering;
+	engine;
 
 	editing = false;
 
-	render = async (key, rendering) => {
-		switch (key) {
+	render = async engine => {
+		switch (engine.key) {
 			case undefined:
-				this.rendering = rendering.clone();
-				return await rendering.render(this, 'TodoItem');
+				this.engine = engine.clone();
+				return await engine.render(null, 'TodoItem');
 
 			case 'completed':
 			case 'checked':
-				return this.todo.completed ? key : '';
+				return this.todo.completed ? engine.key : '';
 
 			case 'editing':
 				return this.editing ? 'editing' : '';
 
 			case 'edit':
-				return this.editing ? await rendering.render(null, 'TodoItem-edit') : '';
+				return this.editing ? await engine.render(null, 'TodoItem-edit') : '';
 		}
 	}
 
@@ -59,7 +59,7 @@ class TodoItem {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.rendering.render(this, 'TodoItem');
+		this.selector().outerHTML = await this.engine.render(null, 'TodoItem');
 		this.listen();
 	}
 
