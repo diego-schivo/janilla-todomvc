@@ -28,25 +28,24 @@ class TodoCount {
 	engine;
 
 	get active() {
-		return this.engine.todoMVC.count.active;
+		return this.engine.app.count.active;
 	}
 
 	render = async engine => {
-		switch (engine.key) {
-			case undefined:
-				this.engine = engine.clone();
-				return await engine.render(null, 'TodoCount');
-			
-			case 'items':
-				return this.active === 1 ? 'item' : 'items';
+		if (engine.isRendering(this)) {
+			this.engine = engine.clone();
+			return await engine.render(this, 'TodoCount');
 		}
+
+		if (engine.isRendering(this, 'items'))
+			return this.active === 1 ? 'item' : 'items';
 	}
 
 	listen = () => {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.engine.render(null, 'TodoCount');
+		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
 	}
 }

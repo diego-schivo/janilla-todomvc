@@ -28,14 +28,14 @@ class ToggleAll {
 	engine;
 
 	render = async engine => {
-		switch (engine.key) {
-			case undefined:
-				this.engine = engine.clone();
-				return await engine.render(null, 'ToggleAll');
-			
-			case 'checked':
-				const c = this.engine.todoMVC.count;
-				return c.completed === c.total ? 'checked' : '';
+		if (engine.isRendering(this)) {
+			this.engine = engine.clone();
+			return await engine.render(this, 'ToggleAll');
+		}
+
+		if (engine.isRendering(this, 'checked')) {
+			const c = this.engine.app.count;
+			return c.completed === c.total ? 'checked' : '';
 		}
 	}
 
@@ -44,7 +44,7 @@ class ToggleAll {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.engine.render(null, 'ToggleAll');
+		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
 	}
 

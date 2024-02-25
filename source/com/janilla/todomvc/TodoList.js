@@ -32,23 +32,23 @@ class TodoList {
 	todoItems;
 
 	render = async engine => {
-		switch (engine.key) {
-			case undefined:
-				this.engine = engine.clone();
-				return await engine.render(null, 'TodoList');
+		if (engine.isRendering(this)) {
+			this.engine = engine.clone();
+			return await engine.render(this, 'TodoList');
+		}
 
-			case 'todoItems':
-				const a = this.engine.todoMVC;
-				let t = a.todos;
-				if (a.filter)
-					t = t.filter(a.filter === 'active' ? (u => !u.completed) : (u => u.completed));
-				this.todoItems = t.map((u, i) => {
-					const j = new TodoItem();
-					j.selector = () => this.selector().children[t.length - 1 - i];
-					j.todo = u;
-					return j;
-				}).reverse();
-				return this.todoItems;
+		if (engine.isRendering(this, 'todoItems')) {
+			const a = this.engine.app;
+			let t = a.todos;
+			if (a.filter)
+				t = t.filter(a.filter === 'active' ? (u => !u.completed) : (u => u.completed));
+			this.todoItems = t.map((u, i) => {
+				const j = new TodoItem();
+				j.selector = () => this.selector().children[t.length - 1 - i];
+				j.todo = u;
+				return j;
+			}).reverse();
+			return this.todoItems;
 		}
 	}
 
@@ -57,7 +57,7 @@ class TodoList {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.engine.render(null, 'TodoList');
+		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
 	}
 }

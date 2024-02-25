@@ -36,24 +36,23 @@ class Filters {
 	}
 
 	render = async engine => {
-		switch (engine.key) {
-			case undefined:
-				this.engine = engine.clone();
-				return await engine.render(null, 'Filters');
-
-			case 'selected':
-				return engine.target.page === location.hash.substring(2) ? 'selected' : '';
+		if (engine.isRendering(this)) {
+			this.engine = engine.clone();
+			return await engine.render(this, 'Filters');
 		}
 
-		if (engine.stack.at(-2).key === 'items')
-			return await engine.render(engine.target[engine.key], 'Filters-item');
+		if (engine.isRendering(undefined, 'selected'))
+			return engine.target.page === location.hash.substring(2) ? 'selected' : '';
+
+		if (engine.isRendering(this, 'items', true))
+			return await engine.render(engine.target, 'Filters-item');
 	}
 
 	listen = () => {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.engine.render(null, 'Filters');
+		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
 	}
 }

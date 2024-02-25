@@ -32,21 +32,19 @@ class TodoItem {
 	editing = false;
 
 	render = async engine => {
-		switch (engine.key) {
-			case undefined:
-				this.engine = engine.clone();
-				return await engine.render(null, 'TodoItem');
-
-			case 'completed':
-			case 'checked':
-				return this.todo.completed ? engine.key : '';
-
-			case 'editing':
-				return this.editing ? 'editing' : '';
-
-			case 'edit':
-				return this.editing ? await engine.render(null, 'TodoItem-edit') : '';
+		if (engine.isRendering(this)) {
+			this.engine = engine.clone();
+			return await engine.render(this, 'TodoItem');
 		}
+
+		if (engine.isRendering(this, 'completed') || engine.isRendering(this, 'checked'))
+			return this.todo.completed ? engine.key : '';
+
+		if (engine.isRendering(this, 'editing'))
+			return this.editing ? 'editing' : '';
+
+		if (engine.isRendering(this, 'edit'))
+			return this.editing ? await engine.render(this, 'TodoItem-edit') : '';
 	}
 
 	listen = () => {
@@ -59,7 +57,7 @@ class TodoItem {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.engine.render(null, 'TodoItem');
+		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
 	}
 
