@@ -29,7 +29,7 @@ import ToggleAll from './ToggleAll.js';
 
 class App {
 
-	selector = () => document.querySelector('.todoapp');
+	selector = () => document.body.firstElementChild;
 
 	todos = [];
 
@@ -55,7 +55,8 @@ class App {
 
 	run = async () => {
 		const e = new CustomRenderEngine();
-		this.selector().innerHTML = await e.render(this, 'App2');
+		const h = await e.render(this, 'app-App');
+		document.body.insertAdjacentHTML('afterbegin', h);
 		this.listen();
 	}
 

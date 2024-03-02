@@ -21,15 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import TodoItem from './TodoItem.js';
-
 class TodoList {
 
 	selector;
 
 	engine;
 
-	todoItems;
+	items;
 
 	render = async engine => {
 		if (engine.isRendering(this)) {
@@ -37,28 +35,120 @@ class TodoList {
 			return await engine.render(this, 'TodoList');
 		}
 
-		if (engine.isRendering(this, 'todoItems')) {
+		if (engine.isRendering(this, 'items')) {
 			const a = this.engine.app;
 			let t = a.todos;
 			if (a.filter)
 				t = t.filter(a.filter === 'active' ? (u => !u.completed) : (u => u.completed));
-			this.todoItems = t.map((u, i) => {
-				const j = new TodoItem();
+			this.items = t.map((u, i) => {
+				const j = new Item();
 				j.selector = () => this.selector().children[t.length - 1 - i];
 				j.todo = u;
 				return j;
 			}).reverse();
-			return this.todoItems;
+			return this.items;
 		}
 	}
 
 	listen = () => {
-		this.todoItems.forEach(i => i.listen());
+		this.items.forEach(i => i.listen());
 	}
 
 	refresh = async () => {
 		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
+	}
+}
+
+class Item {
+
+	selector;
+
+	todo;
+
+	engine;
+
+	editing = false;
+
+	render = async engine => {
+		if (engine.isRendering(this)) {
+			this.engine = engine.clone();
+			return await engine.render(this, 'TodoList-Item');
+		}
+
+		if (engine.isRendering(this, 'completed') || engine.isRendering(this, 'checked'))
+			return this.todo.completed ? engine.key : '';
+
+		if (engine.isRendering(this, 'editing'))
+			return this.editing ? 'editing' : '';
+
+		if (engine.isRendering(this, 'edit'))
+			return this.editing ? await engine.render(this, 'TodoList-Item-edit') : '';
+	}
+
+	listen = () => {
+		this.selector().querySelector('.toggle').addEventListener('click', this.handleToggleClick);
+		this.selector().querySelector('.destroy').addEventListener('click', this.handleDestroyClick);
+		this.selector().querySelector('label').addEventListener('dblclick', this.handleLabelDoubleClick);
+		this.selector().querySelector('.edit')?.addEventListener('blur', this.handleEditBlur);
+		this.selector().querySelector('.edit')?.addEventListener('keypress', this.handleEditKeyPress);
+		this.selector().querySelector('.edit')?.addEventListener('keyup', this.handleEditKeyUp);
+	}
+
+	refresh = async () => {
+		this.selector().outerHTML = await this.render(this.engine);
+		this.listen();
+	}
+
+	handleToggleClick = () => {
+		this.selector().dispatchEvent(new CustomEvent('todotoggle', {
+			bubbles: true,
+			detail: { todo: this.todo }
+		}));
+	}
+
+	handleDestroyClick = () => {
+		this.selector().dispatchEvent(new CustomEvent('tododestroy', {
+			bubbles: true,
+			detail: { todo: this.todo }
+		}));
+	}
+
+	handleLabelDoubleClick = async () => {
+		this.editing = true;
+		await this.refresh();
+		const i = this.selector().querySelector('.edit');
+		const l = i.value.length;
+		i.setSelectionRange(l, l);
+		i.focus();
+	}
+
+	handleEditBlur = async e => {
+		this.editing = false;
+		const t = e.currentTarget.value.trim();
+		if (t === this.todo.title)
+			await this.refresh();
+		else
+			this.selector().dispatchEvent(new CustomEvent('todoedit', {
+				bubbles: true,
+				detail: {
+					todo: this.todo,
+					title: t
+				}
+			}));
+	}
+
+	handleEditKeyPress = async e => {
+		if (e.key === 'Enter')
+			e.currentTarget.blur();
+	}
+
+	handleEditKeyUp = async e => {
+		if (e.key === 'Escape') {
+			const i = e.currentTarget;
+			i.value = this.todo.title;
+			i.blur();
+		}
 	}
 }
 
