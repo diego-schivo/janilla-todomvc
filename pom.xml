@@ -9,7 +9,7 @@
 		<dependency>
 			<groupId>com.janilla</groupId>
 			<artifactId>janilla</artifactId>
-			<version>0.2.0</version>
+			<version>0.3.0</version>
 		</dependency>
 	</dependencies>
 	<properties>
@@ -27,9 +27,26 @@
 				</excludes>
 			</resource>
 		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>com.janilla.todomvc.TodoMVCApp</mainClass>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 	<name>Janilla TodoMVC</name>
-	<description>A TodoMVC written with Janilla features</description>
+	<description>A TodoMVC written with Janilla</description>
 	<url>https://github.com/diego-schivo/janilla-todomvc</url>
 	<licenses>
 		<license>

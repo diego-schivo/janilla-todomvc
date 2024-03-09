@@ -26,10 +26,12 @@ class Filters {
 	selector;
 
 	engine;
+	
+	currentFilter;
 
 	get items() {
 		return [
-			{ page: '', text: 'All' },
+			{ text: 'All' },
 			{ page: 'active', text: 'Active' },
 			{ page: 'completed', text: 'Completed' }
 		];
@@ -41,19 +43,25 @@ class Filters {
 			return await engine.render(this, 'Filters');
 		}
 
-		if (engine.isRendering(undefined, 'selected'))
-			return engine.target.page === location.hash.substring(2) ? 'selected' : '';
-
 		if (engine.isRendering(this, 'items', true))
 			return await engine.render(engine.target, 'Filters-item');
+
+		if (engine.isRendering(undefined, 'selected'))
+			return engine.target.page === this.currentFilter ? 'selected' : '';
 	}
 
 	listen = () => {
+		this.engine.app.selector().addEventListener('todofilterchange', this.handleFilterChange);
 	}
 
 	refresh = async () => {
 		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
+	}
+	
+	handleFilterChange = async e => {
+		this.currentFilter = e.detail.filter;
+		await this.refresh();
 	}
 }
 

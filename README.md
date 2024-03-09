@@ -1,2 +1,31 @@
-# janilla-todomvc
-A TodoMVC written with Janilla features
+# TodoMVC: Janilla
+
+## Description
+
+This application uses Janilla to implement a todo application.
+
+[Janilla](https://www.janilla.com/) provides a full web solution stack packed into a single lightweight library.
+
+## Implementation Details
+
+This implementation uses an in-memory data object that implements a simple array to hold the todos.
+
+## Requirements
+
+The only requirement is an installation of Java and Maven, to be able to compile the project and serve a local server.
+
+```
+* Java (min version: 21.0.1)
+* Maven (min version: 3.9.0)
+```
+
+## Local preview
+
+```
+terminal:
+1. mvn compile
+2. mvn exec:java
+
+browser:
+1. http://localhost:8080/
+```

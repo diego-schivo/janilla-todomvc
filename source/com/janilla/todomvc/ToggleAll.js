@@ -26,6 +26,8 @@ class ToggleAll {
 	selector;
 
 	engine;
+	
+	count;
 
 	render = async engine => {
 		if (engine.isRendering(this)) {
@@ -33,14 +35,13 @@ class ToggleAll {
 			return await engine.render(this, 'ToggleAll');
 		}
 
-		if (engine.isRendering(this, 'checked')) {
-			const c = this.engine.app.count;
-			return c.completed === c.total ? 'checked' : '';
-		}
+		if (engine.isRendering(this, 'checked'))
+			return !this.count?.active ? 'checked' : '';
 	}
 
 	listen = () => {
 		this.selector().querySelector('.toggle-all').addEventListener('change', this.handleToggleAllChange);
+		this.engine.app.selector().addEventListener('todoschange', this.handleTodosChange);
 	}
 
 	refresh = async () => {
@@ -53,6 +54,11 @@ class ToggleAll {
 			bubbles: true,
 			detail: { completed: e.currentTarget.checked }
 		}));
+	}
+	
+	handleTodosChange = async e => {
+		this.count = e.detail.count;
+		await this.refresh();
 	}
 }
 

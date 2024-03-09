@@ -21,25 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-class TodoCount {
+class ClearCompleted {
 
 	selector;
 
 	engine;
-	
-	count;
 
 	render = async engine => {
 		if (engine.isRendering(this)) {
 			this.engine = engine.clone();
-			return await engine.render(this, 'TodoCount');
+			return await engine.render(this, 'ClearCompleted');
 		}
 
-		if (engine.isRendering(this, 'items'))
-			return this.count?.active === 1 ? 'item' : 'items';
+		if (engine.isRendering(this, 'display')) {
+			const c = this.engine.app.count;
+			return c.completed === 0 ? 'display: none;' : '';
+		}
 	}
 
 	listen = () => {
+		this.selector().addEventListener('click', this.handleClick);
 		this.engine.app.selector().addEventListener('todoschange', this.handleTodosChange);
 	}
 
@@ -47,11 +48,14 @@ class TodoCount {
 		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
 	}
+
+	handleClick = () => {
+		this.selector().dispatchEvent(new CustomEvent('todoclearcompleted', { bubbles: true }));
+	}
 	
-	handleTodosChange = async e => {
-		this.count = e.detail.count;
+	handleTodosChange = async () => {
 		await this.refresh();
 	}
 }
 
-export default TodoCount;
+export default ClearCompleted;

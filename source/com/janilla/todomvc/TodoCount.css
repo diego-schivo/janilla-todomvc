@@ -1,8 +1,8 @@
 .todo-count {
 	float: left;
 	text-align: left;
-}
 
-.todo-count strong {
-	font-weight: 300;
+	strong {
+		font-weight: 300;
+	}
 }

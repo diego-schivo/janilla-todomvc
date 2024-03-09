@@ -6,30 +6,40 @@
 	position: absolute;
 	right: 100%;
 	bottom: 100%;
+
+	& + label {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 45px;
+		height: 65px;
+		font-size: 0;
+		position: absolute;
+		top: -65px;
+		left: -0;
+
+		&:before {
+			content: '❯';
+			display: inline-block;
+			font-size: 22px;
+			color: #949494;
+			padding: 10px 27px 10px 27px;
+			-webkit-transform: rotate(90deg);
+			transform: rotate(90deg);
+		}
+	}
+
+	&:checked + label:before {
+		color: #484848;
+	}
 }
 
-.toggle-all + label {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 45px;
-	height: 65px;
-	font-size: 0;
-	position: absolute;
-	top: -65px;
-	left: -0;
-}
-
-.toggle-all + label:before {
-	content: '❯';
-	display: inline-block;
-	font-size: 22px;
-	color: #949494;
-	padding: 10px 27px 10px 27px;
-	-webkit-transform: rotate(90deg);
-	transform: rotate(90deg);
-}
-
-.toggle-all:checked + label:before {
-	color: #484848;
+/*
+	Hack to remove background from Mobile Safari.
+	Can't use it globally since it destroys checkboxes in Firefox
+*/
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	.toggle-all {
+		background: none;
+	}
 }

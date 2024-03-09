@@ -28,6 +28,8 @@ class TodoList {
 	engine;
 
 	items;
+	
+	currentFilter;
 
 	render = async engine => {
 		if (engine.isRendering(this)) {
@@ -38,8 +40,9 @@ class TodoList {
 		if (engine.isRendering(this, 'items')) {
 			const a = this.engine.app;
 			let t = a.todos;
-			if (a.filter)
-				t = t.filter(a.filter === 'active' ? (u => !u.completed) : (u => u.completed));
+			const f = this.currentFilter;
+			if (f)
+				t = t.filter(f === 'active' ? (u => !u.completed) : (u => u.completed));
 			this.items = t.map((u, i) => {
 				const j = new Item();
 				j.selector = () => this.selector().children[t.length - 1 - i];
@@ -51,12 +54,24 @@ class TodoList {
 	}
 
 	listen = () => {
+		const e = this.engine.app.selector();
+		e.addEventListener('todoschange', this.handleTodosChange);
+		e.addEventListener('todofilterchange', this.handleFilterChange);
 		this.items.forEach(i => i.listen());
 	}
 
 	refresh = async () => {
 		this.selector().outerHTML = await this.render(this.engine);
 		this.listen();
+	}
+	
+	handleTodosChange = async () => {
+		await this.refresh();
+	}
+	
+	handleFilterChange = async e => {
+		this.currentFilter = e.detail.filter;
+		await this.refresh();
 	}
 }
 
