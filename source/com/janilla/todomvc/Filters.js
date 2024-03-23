@@ -37,17 +37,15 @@ class Filters {
 		];
 	}
 
-	render = async engine => {
-		if (engine.isRendering(this)) {
-			this.engine = engine.clone();
-			return await engine.render(this, 'Filters');
-		}
-
-		if (engine.isRendering(this, 'items', true))
-			return await engine.render(engine.target, 'Filters-item');
-
-		if (engine.isRendering(undefined, 'selected'))
-			return engine.target.page === this.currentFilter ? 'selected' : '';
+	render = async e => {
+		return await e.match([this], (i, o) => {
+			this.engine = e.clone();
+			o.template = 'Filters';
+		}) || await e.match([this, 'items', 'number'], (i, o) => {
+			o.template = 'Filters-item';
+		}) || await e.match(['object', 'selected'], (i, o) => {
+			o.value = x[0].page === this.currentFilter ? 'selected' : '';
+		});
 	}
 
 	listen = () => {
@@ -55,7 +53,7 @@ class Filters {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.render(this.engine);
+		this.selector().outerHTML = await this.engine.render();
 		this.listen();
 	}
 	

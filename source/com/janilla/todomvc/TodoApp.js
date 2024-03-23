@@ -58,41 +58,35 @@ class TodoApp {
 
 	run = async () => {
 		const e = new CustomRenderEngine();
-		const h = await e.render(this, 'TodoApp');
+		const h = await e.render({ value: this });
 		document.body.insertAdjacentHTML('afterbegin', h);
 		this.listen();
 	}
 
-	render = async engine => {
-		if (engine.isRendering(this, 'toggleAll')) {
+	render = async e => {
+		return await e.match([this], (i, o) => {
+			o.template = 'TodoApp';
+		}) || await e.match([this, 'toggleAll'], (i, o) => {
 			this.toggleAll = new ToggleAll();
 			this.toggleAll.selector = () => this.selector().children[1].firstElementChild;
-			return this.toggleAll;
-		}
-
-		if (engine.isRendering(this, 'todoList')) {
+			o.value = this.toggleAll;
+		}) || await e.match([this, 'todoList'], (i, o) => {
 			this.todoList = new TodoList();
 			this.todoList.selector = () => this.selector().children[1].lastElementChild;
-			return this.todoList;
-		}
-
-		if (engine.isRendering(this, 'todoCount')) {
+			o.value = this.todoList;
+		}) || await e.match([this, 'todoCount'], (i, o) => {
 			this.todoCount = new TodoCount();
 			this.todoCount.selector = () => this.selector().lastElementChild.firstElementChild;
-			return this.todoCount;
-		}
-
-		if (engine.isRendering(this, 'filters')) {
+			o.value = this.todoCount;
+		}) || await e.match([this, 'filters'], (i, o) => {
 			this.filters = new Filters();
 			this.filters.selector = () => this.selector().lastElementChild.children[1];
-			return this.filters;
-		}
-
-		if (engine.isRendering(this, 'clearCompleted')) {
+			o.value = this.filters;
+		}) || await e.match([this, 'clearCompleted'], (i, o) => {
 			this.clearCompleted = new ClearCompleted();
 			this.clearCompleted.selector = () => this.selector().lastElementChild.lastElementChild;
-			return this.clearCompleted;
-		}
+			o.value = this.clearCompleted;
+		});
 	}
 
 	listen = () => {
@@ -186,7 +180,7 @@ class TodoApp {
 class CustomRenderEngine extends RenderEngine {
 
 	get app() {
-		return this.stack[0].target;
+		return this.stack[0].value;
 	}
 
 	clone() {

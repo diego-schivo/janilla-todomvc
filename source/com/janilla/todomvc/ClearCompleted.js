@@ -27,16 +27,14 @@ class ClearCompleted {
 
 	engine;
 
-	render = async engine => {
-		if (engine.isRendering(this)) {
-			this.engine = engine.clone();
-			return await engine.render(this, 'ClearCompleted');
-		}
-
-		if (engine.isRendering(this, 'display')) {
+	render = async e => {
+		return await e.match([this], (i, o) => {
+			this.engine = e.clone();
+			o.template = 'ClearCompleted';
+		}) || await e.match([this, 'display'], (i, o) => {
 			const c = this.engine.app.count;
-			return c.completed === 0 ? 'display: none;' : '';
-		}
+			o.value = c.completed === 0 ? 'display: none;' : '';
+		});
 	}
 
 	listen = () => {
@@ -45,7 +43,7 @@ class ClearCompleted {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.render(this.engine);
+		this.selector().outerHTML = await this.engine.render();
 		this.listen();
 	}
 

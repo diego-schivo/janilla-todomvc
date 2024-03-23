@@ -28,16 +28,14 @@ class TodoList {
 	engine;
 
 	items;
-	
+
 	currentFilter;
 
-	render = async engine => {
-		if (engine.isRendering(this)) {
-			this.engine = engine.clone();
-			return await engine.render(this, 'TodoList');
-		}
-
-		if (engine.isRendering(this, 'items')) {
+	render = async e => {
+		return await e.match([this], (i, o) => {
+			this.engine = e.clone();
+			o.template = 'TodoList';
+		}) || await e.match([this, 'items'], (i, o) => {
 			const a = this.engine.app;
 			let t = a.todos;
 			const f = this.currentFilter;
@@ -49,8 +47,8 @@ class TodoList {
 				j.todo = u;
 				return j;
 			}).reverse();
-			return this.items;
-		}
+			o.value = this.items;
+		});
 	}
 
 	listen = () => {
@@ -61,14 +59,14 @@ class TodoList {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.render(this.engine);
+		this.selector().outerHTML = await this.engine.render();
 		this.listen();
 	}
-	
+
 	handleTodosChange = async () => {
 		await this.refresh();
 	}
-	
+
 	handleFilterChange = async e => {
 		this.currentFilter = e.detail.filter;
 		await this.refresh();
@@ -85,20 +83,20 @@ class Item {
 
 	editing = false;
 
-	render = async engine => {
-		if (engine.isRendering(this)) {
-			this.engine = engine.clone();
-			return await engine.render(this, 'TodoList-Item');
-		}
-
-		if (engine.isRendering(this, 'completed') || engine.isRendering(this, 'checked'))
-			return this.todo.completed ? engine.key : '';
-
-		if (engine.isRendering(this, 'editing'))
-			return this.editing ? 'editing' : '';
-
-		if (engine.isRendering(this, 'edit'))
-			return this.editing ? await engine.render(this, 'TodoList-Item-edit') : '';
+	render = async e => {
+		return await e.match([this], (i, o) => {
+			this.engine = e.clone();
+			o.template = 'TodoList-Item';
+		}) || await e.match([this, 'completed'], (i, o) => {
+			o.value = this.todo.completed ? 'completed' : '';
+		}) || await e.match([this, 'checked'], (i, o) => {
+			o.value = this.todo.completed ? 'checked' : '';
+		}) || await e.match([this, 'editing'], (i, o) => {
+			o.value = this.editing ? 'editing' : '';
+		}) || await e.match([this, 'edit'], (i, o) => {
+			if (this.editing)
+				o.template = 'TodoList-Item-edit';
+		});
 	}
 
 	listen = () => {
@@ -111,7 +109,7 @@ class Item {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.render(this.engine);
+		this.selector().outerHTML = await this.engine.render();
 		this.listen();
 	}
 

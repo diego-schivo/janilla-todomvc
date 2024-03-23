@@ -29,14 +29,13 @@ class TodoCount {
 	
 	count;
 
-	render = async engine => {
-		if (engine.isRendering(this)) {
-			this.engine = engine.clone();
-			return await engine.render(this, 'TodoCount');
-		}
-
-		if (engine.isRendering(this, 'items'))
-			return this.count?.active === 1 ? 'item' : 'items';
+	render = async e => {
+		return await e.match([this], (i, o) => {
+			this.engine = e.clone();
+			o.template = 'TodoCount';
+		}) || await e.match([this, 'items'], (i, o) => {
+			o.value = this.count?.active === 1 ? 'item' : 'items';
+		});
 	}
 
 	listen = () => {
@@ -44,7 +43,7 @@ class TodoCount {
 	}
 
 	refresh = async () => {
-		this.selector().outerHTML = await this.render(this.engine);
+		this.selector().outerHTML = await this.engine.render();
 		this.listen();
 	}
 	

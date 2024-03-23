@@ -1,11 +1,11 @@
-@charset "utf-8";
-@import "base.css";
-@import "TodoApp.css";
-@import "ToggleAll.css";
-@import "TodoList.css";
-@import "TodoCount.css";
-@import "Filters.css";
-@import "ClearCompleted.css";
+@charset 'utf-8';
+@import 'base.css';
+@import 'TodoApp.css';
+@import 'ToggleAll.css';
+@import 'TodoList.css';
+@import 'TodoCount.css';
+@import 'Filters.css';
+@import 'ClearCompleted.css';
 
 .info {
 	margin: 65px auto 0;

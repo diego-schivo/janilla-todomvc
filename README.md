@@ -4,7 +4,7 @@
 
 This application uses Janilla to implement a todo application.
 
-[Janilla](https://www.janilla.com/) provides a full web solution stack packed into a single lightweight library.
+[Janilla](https://janilla.com/) provides a full web solution stack packed into a single lightweight library.
 
 ## Implementation Details
 

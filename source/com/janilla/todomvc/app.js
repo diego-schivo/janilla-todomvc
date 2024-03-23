@@ -23,5 +23,4 @@
  */
 import TodoApp from './TodoApp.js';
 
-const l = () => new TodoApp().run();
-document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', l) : l();
+document.addEventListener('DOMContentLoaded', () => new TodoApp().run());
