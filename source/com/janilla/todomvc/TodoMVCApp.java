@@ -41,7 +41,7 @@ public class TodoMVCApp {
 		var a = new TodoMVCApp();
 
 		var s = new HttpServer();
-		s.setPort(8080);
+		s.setPort(7001);
 		s.setHandler(a.getHandler());
 		s.run();
 	}

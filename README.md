@@ -27,5 +27,5 @@ terminal:
 2. mvn exec:java
 
 browser:
-1. http://localhost:8080/
+1. http://localhost:7001/
 ```
