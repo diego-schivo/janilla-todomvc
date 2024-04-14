@@ -64,25 +64,25 @@ class TodoApp {
 	}
 
 	render = async e => {
-		return await e.match([this], (i, o) => {
+		return await e.match([this], (_, o) => {
 			o.template = 'TodoApp';
-		}) || await e.match([this, 'toggleAll'], (i, o) => {
+		}) || await e.match([this, 'toggleAll'], (_, o) => {
 			this.toggleAll = new ToggleAll();
 			this.toggleAll.selector = () => this.selector().children[1].firstElementChild;
 			o.value = this.toggleAll;
-		}) || await e.match([this, 'todoList'], (i, o) => {
+		}) || await e.match([this, 'todoList'], (_, o) => {
 			this.todoList = new TodoList();
 			this.todoList.selector = () => this.selector().children[1].lastElementChild;
 			o.value = this.todoList;
-		}) || await e.match([this, 'todoCount'], (i, o) => {
+		}) || await e.match([this, 'todoCount'], (_, o) => {
 			this.todoCount = new TodoCount();
 			this.todoCount.selector = () => this.selector().lastElementChild.firstElementChild;
 			o.value = this.todoCount;
-		}) || await e.match([this, 'filters'], (i, o) => {
+		}) || await e.match([this, 'filters'], (_, o) => {
 			this.filters = new Filters();
 			this.filters.selector = () => this.selector().lastElementChild.children[1];
 			o.value = this.filters;
-		}) || await e.match([this, 'clearCompleted'], (i, o) => {
+		}) || await e.match([this, 'clearCompleted'], (_, o) => {
 			this.clearCompleted = new ClearCompleted();
 			this.clearCompleted.selector = () => this.selector().lastElementChild.lastElementChild;
 			o.value = this.clearCompleted;

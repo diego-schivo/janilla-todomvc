@@ -32,10 +32,10 @@ class TodoList {
 	currentFilter;
 
 	render = async e => {
-		return await e.match([this], (i, o) => {
+		return await e.match([this], (_, o) => {
 			this.engine = e.clone();
 			o.template = 'TodoList';
-		}) || await e.match([this, 'items'], (i, o) => {
+		}) || await e.match([this, 'items'], (_, o) => {
 			const a = this.engine.app;
 			let t = a.todos;
 			const f = this.currentFilter;
@@ -84,16 +84,16 @@ class Item {
 	editing = false;
 
 	render = async e => {
-		return await e.match([this], (i, o) => {
+		return await e.match([this], (_, o) => {
 			this.engine = e.clone();
 			o.template = 'TodoList-Item';
-		}) || await e.match([this, 'completed'], (i, o) => {
+		}) || await e.match([this, 'completed'], (_, o) => {
 			o.value = this.todo.completed ? 'completed' : '';
-		}) || await e.match([this, 'checked'], (i, o) => {
+		}) || await e.match([this, 'checked'], (_, o) => {
 			o.value = this.todo.completed ? 'checked' : '';
-		}) || await e.match([this, 'editing'], (i, o) => {
+		}) || await e.match([this, 'editing'], (_, o) => {
 			o.value = this.editing ? 'editing' : '';
-		}) || await e.match([this, 'edit'], (i, o) => {
+		}) || await e.match([this, 'edit'], (_, o) => {
 			if (this.editing)
 				o.template = 'TodoList-Item-edit';
 		});
