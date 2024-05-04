@@ -29,12 +29,14 @@ import java.util.function.Supplier;
 import com.janilla.http.HttpExchange;
 import com.janilla.http.HttpServer;
 import com.janilla.io.IO;
+import com.janilla.reflect.Factory;
 import com.janilla.util.Lazy;
+import com.janilla.util.Util;
 import com.janilla.web.ApplicationHandlerBuilder;
 import com.janilla.web.Handle;
 import com.janilla.web.Render;
 
-@Render(template = "app.html")
+@Render("app.html")
 public class TodoMVCApp {
 
 	public static void main(String[] args) throws IOException {
@@ -46,11 +48,24 @@ public class TodoMVCApp {
 		s.run();
 	}
 
+	private Supplier<Factory> factory = Lazy.of(() -> {
+		var f = new Factory();
+		f.setTypes(Util.getPackageClasses(getClass().getPackageName()).toList());
+		f.setEnclosing(this);
+		return f;
+	});
+
 	Supplier<IO.Consumer<HttpExchange>> handler = Lazy.of(() -> {
-		var b = new ApplicationHandlerBuilder();
-		b.setApplication(this);
+//		var b = new ApplicationHandlerBuilder();
+//		b.setApplication(this);
+		var f = getFactory();
+		var b = f.newInstance(ApplicationHandlerBuilder.class);
 		return b.build();
 	});
+
+	public Factory getFactory() {
+		return factory.get();
+	}
 
 	public IO.Consumer<HttpExchange> getHandler() {
 		return handler.get();
