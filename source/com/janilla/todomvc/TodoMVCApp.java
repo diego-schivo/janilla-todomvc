@@ -23,26 +23,24 @@
  */
 package com.janilla.todomvc;
 
-import java.io.IOException;
 import java.util.function.Supplier;
 
-import com.janilla.http.HttpExchange;
 import com.janilla.http.HttpServer;
-import com.janilla.io.IO;
 import com.janilla.reflect.Factory;
 import com.janilla.util.Lazy;
 import com.janilla.util.Util;
 import com.janilla.web.ApplicationHandlerBuilder;
 import com.janilla.web.Handle;
 import com.janilla.web.Render;
+import com.janilla.web.WebHandler;
 
 @Render("app.html")
 public class TodoMVCApp {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		var a = new TodoMVCApp();
 
-		var s = new HttpServer();
+		var s = a.getFactory().create(HttpServer.class);
 		s.setPort(7001);
 		s.setHandler(a.getHandler());
 		s.run();
@@ -51,23 +49,24 @@ public class TodoMVCApp {
 	private Supplier<Factory> factory = Lazy.of(() -> {
 		var f = new Factory();
 		f.setTypes(Util.getPackageClasses(getClass().getPackageName()).toList());
-		f.setEnclosing(this);
+		f.setSource(this);
 		return f;
 	});
 
-	Supplier<IO.Consumer<HttpExchange>> handler = Lazy.of(() -> {
-//		var b = new ApplicationHandlerBuilder();
-//		b.setApplication(this);
-		var f = getFactory();
-		var b = f.newInstance(ApplicationHandlerBuilder.class);
+	Supplier<WebHandler> handler = Lazy.of(() -> {
+		var b = getFactory().create(ApplicationHandlerBuilder.class);
 		return b.build();
 	});
+	
+	public TodoMVCApp getApplication() {
+		return this;
+	}
 
 	public Factory getFactory() {
 		return factory.get();
 	}
 
-	public IO.Consumer<HttpExchange> getHandler() {
+	public WebHandler getHandler() {
 		return handler.get();
 	}
 
