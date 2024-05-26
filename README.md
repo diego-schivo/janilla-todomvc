@@ -29,3 +29,7 @@ terminal:
 browser:
 1. http://localhost:7001/
 ```
+
+### Set up the project in an IDE
+
+[Step-by-step Video Tutorial](https://youtu.be/-gPWaLrSRwE) available on our [YouTube Channel](https://www.youtube.com/@janilla).
