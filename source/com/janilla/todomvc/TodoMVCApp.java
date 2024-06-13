@@ -32,7 +32,6 @@ import com.janilla.util.Util;
 import com.janilla.web.ApplicationHandlerBuilder;
 import com.janilla.web.Handle;
 import com.janilla.web.Render;
-import com.janilla.web.WebHandler;
 
 @Render("app.html")
 public class TodoMVCApp {
@@ -53,11 +52,11 @@ public class TodoMVCApp {
 		return f;
 	});
 
-	Supplier<WebHandler> handler = Lazy.of(() -> {
+	Supplier<HttpServer.Handler> handler = Lazy.of(() -> {
 		var b = getFactory().create(ApplicationHandlerBuilder.class);
 		return b.build();
 	});
-	
+
 	public TodoMVCApp getApplication() {
 		return this;
 	}
@@ -66,7 +65,7 @@ public class TodoMVCApp {
 		return factory.get();
 	}
 
-	public WebHandler getHandler() {
+	public HttpServer.Handler getHandler() {
 		return handler.get();
 	}
 
