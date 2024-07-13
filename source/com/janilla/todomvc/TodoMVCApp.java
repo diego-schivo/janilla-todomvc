@@ -23,9 +23,14 @@
  */
 package com.janilla.todomvc;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
+import com.janilla.http.HttpHandler;
+import com.janilla.http2.Http2Protocol;
+import com.janilla.net.Net;
 import com.janilla.net.Server;
 import com.janilla.reflect.Factory;
 import com.janilla.util.Lazy;
@@ -40,9 +45,18 @@ public class TodoMVCApp {
 	public static void main(String[] args) throws Exception {
 		var a = new TodoMVCApp();
 
-		var s = a.getFactory().create(Server.class);
+		var s = new Server();
 		s.setAddress(new InetSocketAddress(8443));
-		s.setHandler(a.getHandler());
+		{
+			var p = new Http2Protocol();
+			try (var is = Net.class.getResourceAsStream("testkeys")) {
+				p.setSslContext(Net.getSSLContext("JKS", is, "passphrase".toCharArray()));
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+			p.setHandler(a.getHandler());
+			s.setProtocol(p);
+		}
 		s.serve();
 	}
 
@@ -53,7 +67,7 @@ public class TodoMVCApp {
 		return f;
 	});
 
-	Supplier<Server.Handler> handler = Lazy.of(() -> {
+	Supplier<HttpHandler> handler = Lazy.of(() -> {
 		var b = getFactory().create(ApplicationHandlerBuilder.class);
 		return b.build();
 	});
@@ -66,7 +80,7 @@ public class TodoMVCApp {
 		return factory.get();
 	}
 
-	public Server.Handler getHandler() {
+	public HttpHandler getHandler() {
 		return handler.get();
 	}
 
