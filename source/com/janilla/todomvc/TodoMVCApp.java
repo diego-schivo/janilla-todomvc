@@ -28,8 +28,8 @@ import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
+import com.janilla.http.HttpProtocol;
 import com.janilla.http.HttpHandler;
-import com.janilla.http2.Http2Protocol;
 import com.janilla.net.Net;
 import com.janilla.net.Server;
 import com.janilla.reflect.Factory;
@@ -48,7 +48,7 @@ public class TodoMVCApp {
 		var s = new Server();
 		s.setAddress(new InetSocketAddress(8443));
 		{
-			var p = new Http2Protocol();
+			var p = new HttpProtocol();
 			try (var is = Net.class.getResourceAsStream("testkeys")) {
 				p.setSslContext(Net.getSSLContext("JKS", is, "passphrase".toCharArray()));
 			} catch (IOException e) {
