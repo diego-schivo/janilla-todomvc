@@ -26,14 +26,15 @@ package com.janilla.todomvc;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
-import java.util.function.Supplier;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Properties;
 
-import com.janilla.http.HttpProtocol;
 import com.janilla.http.HttpHandler;
+import com.janilla.http.HttpProtocol;
 import com.janilla.net.Net;
 import com.janilla.net.Server;
 import com.janilla.reflect.Factory;
-import com.janilla.util.Lazy;
 import com.janilla.util.Util;
 import com.janilla.web.ApplicationHandlerBuilder;
 import com.janilla.web.Handle;
@@ -42,50 +43,53 @@ import com.janilla.web.Render;
 @Render("app.html")
 public class TodoMVCApp {
 
-	public static void main(String[] args) throws Exception {
-		var a = new TodoMVCApp();
-
-		var s = new Server();
-		s.setAddress(new InetSocketAddress(8443));
-		{
-			var p = new HttpProtocol();
-			try (var is = Net.class.getResourceAsStream("testkeys")) {
-				p.setSslContext(Net.getSSLContext("JKS", is, "passphrase".toCharArray()));
+	public static void main(String[] args) {
+		try {
+			var pp = new Properties();
+			try (var is = TodoMVCApp.class.getResourceAsStream("configuration.properties")) {
+				pp.load(is);
+				if (args.length > 0) {
+					var p = args[0];
+					if (p.startsWith("~"))
+						p = System.getProperty("user.home") + p.substring(1);
+					pp.load(Files.newInputStream(Path.of(p)));
+				}
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
-			p.setHandler(a.getHandler());
-			s.setProtocol(p);
+			var a = new TodoMVCApp(pp);
+			var hp = a.factory.create(HttpProtocol.class);
+			try (var is = Net.class.getResourceAsStream("testkeys")) {
+				hp.setSslContext(Net.getSSLContext("JKS", is, "passphrase".toCharArray()));
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+			hp.setHandler(a.handler);
+			var s = new Server();
+			s.setAddress(new InetSocketAddress(Integer.parseInt(a.configuration.getProperty("todomvc.server.port"))));
+			s.setProtocol(hp);
+			s.serve();
+		} catch (Throwable e) {
+			e.printStackTrace();
 		}
-		s.serve();
 	}
 
-	private Supplier<Factory> factory = Lazy.of(() -> {
-		var f = new Factory();
-		f.setTypes(Util.getPackageClasses(getClass().getPackageName()).toList());
-		f.setSource(this);
-		return f;
-	});
+	public Properties configuration;
 
-	Supplier<HttpHandler> handler = Lazy.of(() -> {
-		var b = getFactory().create(ApplicationHandlerBuilder.class);
-		return b.build();
-	});
+	public Factory factory;
 
-	public TodoMVCApp getApplication() {
-		return this;
-	}
+	public HttpHandler handler;
 
-	public Factory getFactory() {
-		return factory.get();
-	}
-
-	public HttpHandler getHandler() {
-		return handler.get();
+	public TodoMVCApp(Properties configuration) {
+		this.configuration = configuration;
+		factory = new Factory();
+		factory.setTypes(Util.getPackageClasses(getClass().getPackageName()).toList());
+		factory.setSource(this);
+		handler = factory.create(ApplicationHandlerBuilder.class).build();
 	}
 
 	@Handle(method = "GET", path = "/")
-	public TodoMVCApp getApp() {
+	public TodoMVCApp getApplication() {
 		return this;
 	}
 }
