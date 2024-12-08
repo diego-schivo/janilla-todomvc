@@ -30,7 +30,7 @@ export default class TodoList extends UpdatableElement {
 	}
 
 	static get observedAttributes() {
-		return ["data-route", "data-total-items"];
+		return ["data-filter", "data-total-items"];
 	}
 
 	items = [];
@@ -41,43 +41,38 @@ export default class TodoList extends UpdatableElement {
 
 	async update() {
 		// console.log("TodoItem.update");
-
 		this.interpolator ??= (await this.interpolatorBuilders)[0]();
+		this.itemBuilder ??= (await this.interpolatorBuilders)[1];
 		this.appendChild(this.interpolator({
-			style: `display:${parseInt(this.dataset.totalItems, 10) ? "block" : "none"}`,
+			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
 			items: this.items.map(x => x[0]({
 				...x[1],
 				style: (() => {
-					const cc = [];
-					switch (this.dataset.route) {
-						case "active":
-							cc.push(false);
-							break;
-						case "completed":
-							cc.push(true);
-							break;
-						default:
-							cc.push(false, true);
-							break;
-					}
-					return `display:${cc.includes(x[1].completed) ? "block" : "none"}`;
+					const c = this.dataset.filter !== "all" ? this.dataset.filter === "completed" : undefined;
+					return `display:${c === undefined || x[1].completed === c ? "block" : "none"}`;
 				})()
 			}))
 		}));
 	}
 
-	async addItem(entry) {
-		console.log("TodoList.addItem", entry);
-
-		this.items.push([(await this.interpolatorBuilders)[1](), entry]);
+	addItem(entry) {
+		// console.log("TodoList.addItem", entry);
+		this.items.push([this.itemBuilder(), entry]);
 		this.requestUpdate();
 	}
 
 	clearCompletedItems() {
-		console.log("TodoList.clearCompletedItems");
-
+		// console.log("TodoList.clearCompletedItems");
 		for (let i = this.items.length - 1; i >= 0; i--)
 			if (this.items[i][1].completed)
+				this.items.splice(i, 1);
+		this.requestUpdate();
+	}
+
+	removeItem(id) {
+		// console.log("TodoList.removeItem", id);
+		for (let i = this.items.length - 1; i >= 0; i--)
+			if (this.items[i][1].id === id)
 				this.items.splice(i, 1);
 		this.requestUpdate();
 	}

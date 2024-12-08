@@ -22,9 +22,13 @@
  * SOFTWARE.
  */
 import { UpdatableElement } from "./web-components.js";
-import { nanoid } from "./nanoid.js";
+import { nanoid } from "./static/scripts/nanoid.js";
 
 export default class TodoTopbar extends UpdatableElement {
+
+	static get observedAttributes() {
+		return ["data-filter", "data-total-items", "data-active-items", "data-completed-items"];
+	}
 
 	static get templateName() {
 		return "todo-topbar";
@@ -33,33 +37,59 @@ export default class TodoTopbar extends UpdatableElement {
 	constructor() {
 		super();
 	}
+	
+	get toggleInput() {
+		return this.querySelector(".toggle-all-input");
+	}
 
-	async connectedCallback() {
+	connectedCallback() {
 		// console.log("TodoTopbar.connectedCallback");
-
 		super.connectedCallback();
-		this.addEventListener("keyup", this.handleKeyup);
+		this.addEventListener("change", this.handleChange);
+		this.addEventListener("keyup", this.handleKeyUp);
 	}
 
 	disconnectedCallback() {
 		// console.log("TodoTopbar.disconnectedCallback");
-
-		this.removeEventListener("keyup", this.handleKeyup);
+		this.removeEventListener("change", this.handleChange);
+		this.removeEventListener("keyup", this.handleKeyUp);
 	}
 
 	async update() {
 		// console.log("TodoTopbar.update");
-
 		this.interpolator ??= (await this.interpolatorBuilders)[0]();
-		this.appendChild(this.interpolator());
+		const totalItems = parseInt(this.dataset.totalItems);
+		this.appendChild(this.interpolator({ toggleAllStyle: `display:${totalItems ? "block" : "none"}` }));
+		if (totalItems) {
+			switch (this.dataset.filter) {
+				case "active":
+					this.toggleInput.checked = false;
+					this.toggleInput.disabled = !parseInt(this.dataset.activeItems);
+					break;
+				case "completed":
+					this.toggleInput.checked = parseInt(this.dataset.completedItems);
+					this.toggleInput.disabled = !parseInt(this.dataset.completedItems);
+					break;
+				default:
+					this.toggleInput.checked = !parseInt(this.dataset.activeItems);
+					this.toggleInput.disabled = false;
+			}
+		}
 	}
 
-	handleKeyup = event => {
-		console.log("TodoTopbar.handleKeyup", event);
+	handleChange = event => {
+		// console.log("TodoTopbar.handleChange", event);
+		if (event.target.matches(".toggle-all-input"))
+			this.dispatchEvent(new CustomEvent("toggle-all", {
+				bubbles: true,
+				detail: { completed: event.target.checked }
+			}));
+	}
 
+	handleKeyUp = event => {
+		// console.log("TodoTopbar.handleKeyUp", event);
 		if (event.key !== "Enter" || !event.target.value)
 			return;
-
 		this.dispatchEvent(new CustomEvent("add-item", {
 			bubbles: true,
 			detail: {
@@ -68,7 +98,6 @@ export default class TodoTopbar extends UpdatableElement {
 				completed: false,
 			}
 		}));
-
 		event.target.value = "";
 	}
 }

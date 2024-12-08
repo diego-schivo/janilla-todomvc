@@ -30,51 +30,47 @@ export default class TodoBottombar extends UpdatableElement {
 	}
 
 	static get observedAttributes() {
-		return ["data-active-items", "data-route", "data-total-items"];
+		return ["data-active-items", "data-filter", "data-total-items"];
 	}
 
 	constructor() {
 		super();
 	}
 
-	async connectedCallback() {
+	connectedCallback() {
 		// console.log("TodoBottombar.connectedCallback");
-
 		super.connectedCallback();
 		this.addEventListener("click", this.handleClick);
 	}
 
 	disconnectedCallback() {
 		// console.log("TodoBottombar.disconnectedCallback");
-
 		this.removeEventListener("click", this.handleClick);
 	}
 
 	async update() {
 		// console.log("TodoBottombar.update");
-
 		this.interpolator ??= (await this.interpolatorBuilders)[0]();
-		this.filterInterpolators ??= (await Promise.all(Array.from({ length: 3 }, () => this.interpolatorBuilders))).map(x => x[1]());
+		this.filterBuilder ??= (await this.interpolatorBuilders)[1];
+		this.filters ??= Array.from({ length: 3 }, this.filterBuilder);
 		this.appendChild(this.interpolator({
-			style: `display:${parseInt(this.dataset.totalItems, 10) ? "block" : "none"}`,
+			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
 			todoStatusText: (() => {
-				const ai = parseInt(this.dataset.activeItems, 10);
+				const ai = parseInt(this.dataset.activeItems);
 				return `${ai} ${ai === 1 ? "item" : "items"} left!`;
 			})(),
-			filterItems: ["all", "active", "completed"].map((x, i) => this.filterInterpolators[i]({
+			filterItems: ["all", "active", "completed"].map((x, i) => this.filters[i]({
 				id: `filter-link-${x}`,
-				class: `filter-link ${x === this.dataset.route ? "selected" : ""}`,
+				class: `filter-link ${x === this.dataset.filter ? "selected" : ""}`,
 				href: `#/${x !== "all" ? x : ""}`,
-				route: x,
 				text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
 			}))
 		}));
 	}
 
 	handleClick = event => {
-		console.log("TodoBottombar.handleClick", event);
-
-		if (event.target.id === "clear-completed")
-			this.dispatchEvent(new CustomEvent("clear-completed-items", { bubbles: true }));
+		// console.log("TodoBottombar.handleClick", event);
+		if (event.target.matches(".clear-completed-button"))
+			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
 	}
 }
