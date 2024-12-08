@@ -25,34 +25,18 @@ import { UpdatableElement } from "./web-components.js";
 
 export default class TodoList extends UpdatableElement {
 
-	static get templateName() {
-		return "todo-list";
-	}
-
 	static get observedAttributes() {
 		return ["data-filter", "data-total-items"];
+	}
+
+	static get templateName() {
+		return "todo-list";
 	}
 
 	items = [];
 
 	constructor() {
 		super();
-	}
-
-	async update() {
-		// console.log("TodoItem.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
-		this.itemBuilder ??= (await this.interpolatorBuilders)[1];
-		this.appendChild(this.interpolator({
-			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
-			items: this.items.map(x => x[0]({
-				...x[1],
-				style: (() => {
-					const c = this.dataset.filter !== "all" ? this.dataset.filter === "completed" : undefined;
-					return `display:${c === undefined || x[1].completed === c ? "block" : "none"}`;
-				})()
-			}))
-		}));
 	}
 
 	addItem(entry) {
@@ -75,5 +59,21 @@ export default class TodoList extends UpdatableElement {
 			if (this.items[i][1].id === id)
 				this.items.splice(i, 1);
 		this.requestUpdate();
+	}
+
+	async update() {
+		// console.log("TodoItem.update");
+		this.interpolator ??= (await this.interpolatorBuilders)[0]();
+		this.itemBuilder ??= (await this.interpolatorBuilders)[1];
+		this.appendChild(this.interpolator({
+			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
+			items: this.items.map(x => x[0]({
+				...x[1],
+				style: (() => {
+					const c = this.dataset.filter !== "all" ? this.dataset.filter === "completed" : undefined;
+					return `display:${c === undefined || x[1].completed === c ? "block" : "none"}`;
+				})()
+			}))
+		}));
 	}
 }

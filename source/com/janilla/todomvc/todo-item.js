@@ -1,4 +1,3 @@
-
 /*
  * MIT License
  *
@@ -55,21 +54,6 @@ export default class TodoItem extends UpdatableElement {
 		this.removeEventListener("change", this.handleChange);
 		this.removeEventListener("click", this.handleClick);
 		this.removeEventListener("keyup", this.handleKeyUp);
-	}
-
-	async update() {
-		// console.log("TodoItem.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
-		this.appendChild(this.interpolator({
-			...this.dataset,
-			class: `todo-item ${this.dataset.edit ? "editing" : ""}`
-		}));
-		if (this.dataset.edit) {
-			this.editInput.value = this.dataset.title;
-			this.editInput.focus();
-			this.editInput.addEventListener("blur", this.handleBlur);
-		} else
-			this.toggleInput.checked = this.dataset.completed === "true";
 	}
 
 	handleBlur = event => {
@@ -136,5 +120,20 @@ export default class TodoItem extends UpdatableElement {
 				return;
 		}
 		this.editInput.blur();
+	}
+
+	async update() {
+		// console.log("TodoItem.update");
+		this.interpolator ??= (await this.interpolatorBuilders)[0]();
+		this.appendChild(this.interpolator({
+			...this.dataset,
+			class: `todo-item ${this.dataset.edit ? "editing" : ""}`
+		}));
+		if (this.dataset.edit) {
+			this.editInput.value = this.dataset.title;
+			this.editInput.focus();
+			this.editInput.addEventListener("blur", this.handleBlur);
+		} else
+			this.toggleInput.checked = this.dataset.completed === "true";
 	}
 }

@@ -25,12 +25,12 @@ import { UpdatableElement } from "./web-components.js";
 
 export default class TodoBottombar extends UpdatableElement {
 
-	static get templateName() {
-		return "todo-bottombar";
-	}
-
 	static get observedAttributes() {
 		return ["data-active-items", "data-filter", "data-total-items"];
+	}
+
+	static get templateName() {
+		return "todo-bottombar";
 	}
 
 	constructor() {
@@ -46,6 +46,12 @@ export default class TodoBottombar extends UpdatableElement {
 	disconnectedCallback() {
 		// console.log("TodoBottombar.disconnectedCallback");
 		this.removeEventListener("click", this.handleClick);
+	}
+
+	handleClick = event => {
+		// console.log("TodoBottombar.handleClick", event);
+		if (event.target.matches(".clear-completed-button"))
+			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
 	}
 
 	async update() {
@@ -66,11 +72,5 @@ export default class TodoBottombar extends UpdatableElement {
 				text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
 			}))
 		}));
-	}
-
-	handleClick = event => {
-		// console.log("TodoBottombar.handleClick", event);
-		if (event.target.matches(".clear-completed-button"))
-			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
 	}
 }

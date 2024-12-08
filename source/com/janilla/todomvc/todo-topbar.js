@@ -55,28 +55,6 @@ export default class TodoTopbar extends UpdatableElement {
 		this.removeEventListener("keyup", this.handleKeyUp);
 	}
 
-	async update() {
-		// console.log("TodoTopbar.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
-		const totalItems = parseInt(this.dataset.totalItems);
-		this.appendChild(this.interpolator({ toggleAllStyle: `display:${totalItems ? "block" : "none"}` }));
-		if (totalItems) {
-			switch (this.dataset.filter) {
-				case "active":
-					this.toggleInput.checked = false;
-					this.toggleInput.disabled = !parseInt(this.dataset.activeItems);
-					break;
-				case "completed":
-					this.toggleInput.checked = parseInt(this.dataset.completedItems);
-					this.toggleInput.disabled = !parseInt(this.dataset.completedItems);
-					break;
-				default:
-					this.toggleInput.checked = !parseInt(this.dataset.activeItems);
-					this.toggleInput.disabled = false;
-			}
-		}
-	}
-
 	handleChange = event => {
 		// console.log("TodoTopbar.handleChange", event);
 		if (event.target.matches(".toggle-all-input"))
@@ -99,5 +77,27 @@ export default class TodoTopbar extends UpdatableElement {
 			}
 		}));
 		event.target.value = "";
+	}
+
+	async update() {
+		// console.log("TodoTopbar.update");
+		this.interpolator ??= (await this.interpolatorBuilders)[0]();
+		const totalItems = parseInt(this.dataset.totalItems);
+		this.appendChild(this.interpolator({ toggleAllStyle: `display:${totalItems ? "block" : "none"}` }));
+		if (totalItems) {
+			switch (this.dataset.filter) {
+				case "active":
+					this.toggleInput.checked = false;
+					this.toggleInput.disabled = !parseInt(this.dataset.activeItems);
+					break;
+				case "completed":
+					this.toggleInput.checked = parseInt(this.dataset.completedItems);
+					this.toggleInput.disabled = !parseInt(this.dataset.completedItems);
+					break;
+				default:
+					this.toggleInput.checked = !parseInt(this.dataset.activeItems);
+					this.toggleInput.disabled = false;
+			}
+		}
 	}
 }

@@ -62,19 +62,6 @@ export default class TodoApp extends UpdatableElement {
 		this.removeEventListener("update-item", this.handleUpdateItem);
 	}
 
-	async update() {
-		// console.log("TodoApp.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
-		const totalItems = this.data.length;
-		const activeItems = this.data.filter(entry => !entry.completed).length;
-		this.appendChild(this.interpolator({
-			totalItems,
-			activeItems,
-			completedItems: totalItems - activeItems,
-			filter: location.hash.split("/")[1] || "all",
-		}));
-	}
-
 	handleAddItem = event => {
 		// console.log("TodoApp.handleAddItem", event);
 		const { detail: item } = event;
@@ -118,6 +105,7 @@ export default class TodoApp extends UpdatableElement {
 		// console.log("TodoApp.handleToggleAll", event);
 		const { detail: { completed } } = event;
 		this.data.forEach(x => x.completed = completed);
+		this.requestUpdate();
 		this.list.requestUpdate();
 	}
 
@@ -126,5 +114,18 @@ export default class TodoApp extends UpdatableElement {
 		const { detail: item } = event;
 		this.data.find(x => x.id === item.id).title = item.title;
 		this.list.requestUpdate();
+	}
+
+	async update() {
+		// console.log("TodoApp.update");
+		this.interpolator ??= (await this.interpolatorBuilders)[0]();
+		const totalItems = this.data.length;
+		const activeItems = this.data.filter(entry => !entry.completed).length;
+		this.appendChild(this.interpolator({
+			totalItems,
+			activeItems,
+			completedItems: totalItems - activeItems,
+			filter: location.hash.split("/")[1] || "all",
+		}));
 	}
 }
