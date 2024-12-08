@@ -54,11 +54,10 @@ export default class TodoBottombar extends UpdatableElement {
 			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
 	}
 
-	async update() {
+	update() {
 		// console.log("TodoBottombar.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
-		this.filterBuilder ??= (await this.interpolatorBuilders)[1];
-		this.filters ??= Array.from({ length: 3 }, this.filterBuilder);
+		this.interpolator ??= this.interpolatorBuilders[0]();
+		this.filters ??= Array.from({ length: 3 }, this.interpolatorBuilders[1]);
 		this.appendChild(this.interpolator({
 			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
 			todoStatusText: (() => {

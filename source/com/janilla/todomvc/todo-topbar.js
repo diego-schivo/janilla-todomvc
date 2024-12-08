@@ -79,9 +79,9 @@ export default class TodoTopbar extends UpdatableElement {
 		event.target.value = "";
 	}
 
-	async update() {
+	update() {
 		// console.log("TodoTopbar.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
+		this.interpolator ??= this.interpolatorBuilders[0]();
 		const totalItems = parseInt(this.dataset.totalItems);
 		this.appendChild(this.interpolator({ toggleAllStyle: `display:${totalItems ? "block" : "none"}` }));
 		if (totalItems) {

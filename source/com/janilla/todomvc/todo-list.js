@@ -41,7 +41,7 @@ export default class TodoList extends UpdatableElement {
 
 	addItem(entry) {
 		// console.log("TodoList.addItem", entry);
-		this.items.push([this.itemBuilder(), entry]);
+		this.items.push([this.interpolatorBuilders[1](), entry]);
 		this.requestUpdate();
 	}
 
@@ -61,10 +61,9 @@ export default class TodoList extends UpdatableElement {
 		this.requestUpdate();
 	}
 
-	async update() {
+	update() {
 		// console.log("TodoItem.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
-		this.itemBuilder ??= (await this.interpolatorBuilders)[1];
+		this.interpolator ??= this.interpolatorBuilders[0]();
 		this.appendChild(this.interpolator({
 			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
 			items: this.items.map(x => x[0]({

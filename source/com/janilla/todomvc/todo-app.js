@@ -116,9 +116,9 @@ export default class TodoApp extends UpdatableElement {
 		this.list.requestUpdate();
 	}
 
-	async update() {
+	update() {
 		// console.log("TodoApp.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
+		this.interpolator ??= this.interpolatorBuilders[0]();
 		const totalItems = this.data.length;
 		const activeItems = this.data.filter(entry => !entry.completed).length;
 		this.appendChild(this.interpolator({

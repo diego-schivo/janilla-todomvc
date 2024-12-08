@@ -122,9 +122,9 @@ export default class TodoItem extends UpdatableElement {
 		this.editInput.blur();
 	}
 
-	async update() {
+	update() {
 		// console.log("TodoItem.update");
-		this.interpolator ??= (await this.interpolatorBuilders)[0]();
+		this.interpolator ??= this.interpolatorBuilders[0]();
 		this.appendChild(this.interpolator({
 			...this.dataset,
 			class: `todo-item ${this.dataset.edit ? "editing" : ""}`
