@@ -61,7 +61,7 @@ export default class TodoList extends UpdatableElement {
 		this.requestUpdate();
 	}
 
-	update() {
+	async update() {
 		// console.log("TodoItem.update");
 		this.interpolator ??= this.interpolatorBuilders[0]();
 		this.appendChild(this.interpolator({

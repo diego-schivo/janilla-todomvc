@@ -122,7 +122,7 @@ export default class TodoItem extends UpdatableElement {
 		this.editInput.blur();
 	}
 
-	update() {
+	async update() {
 		// console.log("TodoItem.update");
 		this.interpolator ??= this.interpolatorBuilders[0]();
 		this.appendChild(this.interpolator({
