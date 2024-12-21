@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { UpdatableElement } from "./web-components.js";
+import { FlexibleElement } from "./flexible-element.js";
 
-export default class TodoItem extends UpdatableElement {
+export default class TodoItem extends FlexibleElement {
 
 	static get templateName() {
 		return "todo-item";
@@ -31,14 +31,6 @@ export default class TodoItem extends UpdatableElement {
 
 	constructor() {
 		super();
-	}
-
-	get editInput() {
-		return this.querySelector(".edit-todo-input");
-	}
-
-	get toggleInput() {
-		return this.querySelector(".toggle-todo-input");
 	}
 
 	connectedCallback() {
@@ -119,21 +111,23 @@ export default class TodoItem extends UpdatableElement {
 			default:
 				return;
 		}
-		this.editInput.blur();
+		this.querySelector(".edit-todo-input").blur();
 	}
 
-	async update() {
-		// console.log("TodoItem.update");
-		this.interpolator ??= this.interpolatorBuilders[0]();
-		this.appendChild(this.interpolator({
+	async updateDisplay() {
+		// console.log("TodoItem.updateDisplay");
+		await super.updateDisplay();
+		this.interpolate ??= this.createInterpolateDom();
+		this.appendChild(this.interpolate({
 			...this.dataset,
 			class: `todo-item ${this.dataset.edit ? "editing" : ""}`
 		}));
 		if (this.dataset.edit) {
-			this.editInput.value = this.dataset.title;
-			this.editInput.focus();
-			this.editInput.addEventListener("blur", this.handleBlur);
+			const el = this.querySelector(".edit-todo-input");
+			el.value = this.dataset.title;
+			el.focus();
+			el.addEventListener("blur", this.handleBlur);
 		} else
-			this.toggleInput.checked = this.dataset.completed === "true";
+			this.querySelector(".toggle-todo-input").checked = this.dataset.completed === "true";
 	}
 }

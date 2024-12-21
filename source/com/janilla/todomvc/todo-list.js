@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { UpdatableElement } from "./web-components.js";
+import { FlexibleElement } from "./flexible-element.js";
 
-export default class TodoList extends UpdatableElement {
+export default class TodoList extends FlexibleElement {
 
 	static get observedAttributes() {
 		return ["data-filter", "data-total-items"];
@@ -33,46 +33,30 @@ export default class TodoList extends UpdatableElement {
 		return "todo-list";
 	}
 
-	items = [];
+	// items = [];
 
 	constructor() {
 		super();
 	}
 
-	addItem(entry) {
-		// console.log("TodoList.addItem", entry);
-		this.items.push([this.interpolatorBuilders[1](), entry]);
-		this.requestUpdate();
-	}
-
-	clearCompletedItems() {
-		// console.log("TodoList.clearCompletedItems");
-		for (let i = this.items.length - 1; i >= 0; i--)
-			if (this.items[i][1].completed)
-				this.items.splice(i, 1);
-		this.requestUpdate();
-	}
-
-	removeItem(id) {
-		// console.log("TodoList.removeItem", id);
-		for (let i = this.items.length - 1; i >= 0; i--)
-			if (this.items[i][1].id === id)
-				this.items.splice(i, 1);
-		this.requestUpdate();
-	}
-
-	async update() {
-		// console.log("TodoItem.update");
-		this.interpolator ??= this.interpolatorBuilders[0]();
-		this.appendChild(this.interpolator({
+	async updateDisplay() {
+		// console.log("TodoItem.updateDisplay");
+		await super.updateDisplay();
+		this.interpolate ??= this.createInterpolateDom();
+		this.appendChild(this.interpolate({
 			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
-			items: this.items.map(x => x[0]({
-				...x[1],
-				style: (() => {
-					const c = this.dataset.filter !== "all" ? this.dataset.filter === "completed" : undefined;
-					return `display:${c === undefined || x[1].completed === c ? "block" : "none"}`;
-				})()
-			}))
+			items: (() => {
+				const ii = this.closest("todo-app").data;
+				if (this.interpolateItems?.length !== ii.length)
+					this.interpolateItems = ii.map(() => this.createInterpolateDom("item"));
+				return ii.map((x, i) => this.interpolateItems[i]({
+					...x,
+					style: (() => {
+						const c = this.dataset.filter !== "all" ? this.dataset.filter === "completed" : undefined;
+						return `display:${c === undefined || x.completed === c ? "block" : "none"}`;
+					})()
+				}));
+			})()
 		}));
 	}
 }

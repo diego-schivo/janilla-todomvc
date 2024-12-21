@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { UpdatableElement } from "./web-components.js";
+import { FlexibleElement } from "./flexible-element.js";
 import { nanoid } from "./static/scripts/nanoid.js";
 
-export default class TodoTopbar extends UpdatableElement {
+export default class TodoTopbar extends FlexibleElement {
 
 	static get observedAttributes() {
 		return ["data-filter", "data-total-items", "data-active-items", "data-completed-items"];
@@ -38,10 +38,6 @@ export default class TodoTopbar extends UpdatableElement {
 		super();
 	}
 	
-	get toggleInput() {
-		return this.querySelector(".toggle-all-input");
-	}
-
 	connectedCallback() {
 		// console.log("TodoTopbar.connectedCallback");
 		super.connectedCallback();
@@ -79,24 +75,26 @@ export default class TodoTopbar extends UpdatableElement {
 		event.target.value = "";
 	}
 
-	async update() {
-		// console.log("TodoTopbar.update");
-		this.interpolator ??= this.interpolatorBuilders[0]();
+	async updateDisplay() {
+		// console.log("TodoTopbar.updateDisplay");
+		await super.updateDisplay();
+		this.interpolate ??= this.createInterpolateDom();
 		const totalItems = parseInt(this.dataset.totalItems);
-		this.appendChild(this.interpolator({ toggleAllStyle: `display:${totalItems ? "block" : "none"}` }));
+		this.appendChild(this.interpolate({ toggleAllStyle: `display:${totalItems ? "block" : "none"}` }));
 		if (totalItems) {
+			const el = this.querySelector(".toggle-all-input");
 			switch (this.dataset.filter) {
 				case "active":
-					this.toggleInput.checked = false;
-					this.toggleInput.disabled = !parseInt(this.dataset.activeItems);
+					el.checked = false;
+					el.disabled = !parseInt(this.dataset.activeItems);
 					break;
 				case "completed":
-					this.toggleInput.checked = parseInt(this.dataset.completedItems);
-					this.toggleInput.disabled = !parseInt(this.dataset.completedItems);
+					el.checked = parseInt(this.dataset.completedItems);
+					el.disabled = !parseInt(this.dataset.completedItems);
 					break;
 				default:
-					this.toggleInput.checked = !parseInt(this.dataset.activeItems);
-					this.toggleInput.disabled = false;
+					el.checked = !parseInt(this.dataset.activeItems);
+					el.disabled = false;
 			}
 		}
 	}

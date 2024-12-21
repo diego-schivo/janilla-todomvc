@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { UpdatableElement } from "./web-components.js";
+import { FlexibleElement } from "./flexible-element.js";
 
-export default class TodoApp extends UpdatableElement {
+export default class TodoApp extends FlexibleElement {
 
 	static get templateName() {
 		return "todo-app";
@@ -33,10 +33,6 @@ export default class TodoApp extends UpdatableElement {
 
 	constructor() {
 		super();
-	}
-
-	get list() {
-		return this.querySelector("todo-list");
 	}
 
 	connectedCallback() {
@@ -66,7 +62,6 @@ export default class TodoApp extends UpdatableElement {
 		// console.log("TodoApp.handleAddItem", event);
 		const { detail: item } = event;
 		this.data.push(item);
-		this.list.addItem(item);
 		this.requestUpdate();
 	}
 
@@ -75,7 +70,6 @@ export default class TodoApp extends UpdatableElement {
 		for (let i = this.data.length - 1; i >= 0; i--)
 			if (this.data[i].completed)
 				this.data.splice(i, 1);
-		this.list.clearCompletedItems();
 		this.requestUpdate();
 	}
 
@@ -90,7 +84,6 @@ export default class TodoApp extends UpdatableElement {
 		for (let i = this.data.length - 1; i >= 0; i--)
 			if (this.data[i].id === id)
 				this.data.splice(i, 1);
-		this.list.removeItem(id);
 		this.requestUpdate();
 	}
 
@@ -106,25 +99,27 @@ export default class TodoApp extends UpdatableElement {
 		const { detail: { completed } } = event;
 		this.data.forEach(x => x.completed = completed);
 		this.requestUpdate();
-		this.list.requestUpdate();
+		this.querySelector("todo-list").requestUpdate();
 	}
 
 	handleUpdateItem = event => {
 		// console.log("TodoApp.handleUpdateItem", event);
 		const { detail: item } = event;
 		this.data.find(x => x.id === item.id).title = item.title;
-		this.list.requestUpdate();
+		this.querySelector("todo-list").requestUpdate();
 	}
 
-	async update() {
-		// console.log("TodoApp.update");
-		this.interpolator ??= this.interpolatorBuilders[0]();
-		const totalItems = this.data.length;
-		const activeItems = this.data.filter(entry => !entry.completed).length;
-		this.appendChild(this.interpolator({
-			totalItems,
-			activeItems,
-			completedItems: totalItems - activeItems,
+	async updateDisplay() {
+		// console.log("TodoApp.updateDisplay");
+		await super.updateDisplay();
+		this.interpolate ??= this.createInterpolateDom();
+		const tii = this.data.length;
+		const aii = this.data.reduce((x, y) => y.completed ? x : x + 1, 0);
+		const cii = tii - aii;
+		this.appendChild(this.interpolate({
+			totalItems: tii,
+			activeItems: aii,
+			completedItems: cii,
 			filter: location.hash.split("/")[1] || "all",
 		}));
 	}

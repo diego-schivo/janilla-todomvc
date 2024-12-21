@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { UpdatableElement } from "./web-components.js";
+import { FlexibleElement } from "./flexible-element.js";
 
-export default class TodoBottombar extends UpdatableElement {
+export default class TodoBottombar extends FlexibleElement {
 
 	static get observedAttributes() {
 		return ["data-active-items", "data-filter", "data-total-items"];
@@ -54,22 +54,25 @@ export default class TodoBottombar extends UpdatableElement {
 			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
 	}
 
-	async update() {
-		// console.log("TodoBottombar.update");
-		this.interpolator ??= this.interpolatorBuilders[0]();
-		this.filters ??= Array.from({ length: 3 }, this.interpolatorBuilders[1]);
-		this.appendChild(this.interpolator({
+	async updateDisplay() {
+		// console.log("TodoBottombar.updateDisplay");
+		await super.updateDisplay();
+		this.interpolate ??= this.createInterpolateDom();
+		this.appendChild(this.interpolate({
 			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
 			todoStatusText: (() => {
-				const ai = parseInt(this.dataset.activeItems);
-				return `${ai} ${ai === 1 ? "item" : "items"} left!`;
+				const aii = parseInt(this.dataset.activeItems);
+				return `${aii} ${aii === 1 ? "item" : "items"} left!`;
 			})(),
-			filterItems: ["all", "active", "completed"].map((x, i) => this.filters[i]({
-				id: `filter-link-${x}`,
-				class: `filter-link ${x === this.dataset.filter ? "selected" : ""}`,
-				href: `#/${x !== "all" ? x : ""}`,
-				text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
-			}))
+			filterItems: (() => {
+				this.interpolateFilterItems ??= Array.from({ length: 3 }, () => this.createInterpolateDom("filter-item"));
+				return ["all", "active", "completed"].map((x, i) => this.interpolateFilterItems[i]({
+					id: `filter-link-${x}`,
+					class: `filter-link ${x === this.dataset.filter ? "selected" : ""}`,
+					href: `#/${x !== "all" ? x : ""}`,
+					text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
+				}));
+			})()
 		}));
 	}
 }
