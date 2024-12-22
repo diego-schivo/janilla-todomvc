@@ -40,13 +40,13 @@ import com.janilla.web.ApplicationHandlerBuilder;
 import com.janilla.web.Handle;
 import com.janilla.web.Render;
 
-@Render("index.html")
-public class TodoMVC {
+@Render(TodoMvcRenderer.class)
+public class TodoMvc {
 
 	public static void main(String[] args) {
 		try {
 			var pp = new Properties();
-			try (var is = TodoMVC.class.getResourceAsStream("configuration.properties")) {
+			try (var is = TodoMvc.class.getResourceAsStream("configuration.properties")) {
 				pp.load(is);
 				if (args.length > 0) {
 					var p = args[0];
@@ -57,7 +57,7 @@ public class TodoMVC {
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
-			var a = new TodoMVC(pp);
+			var a = new TodoMvc(pp);
 			var hp = a.factory.create(HttpProtocol.class);
 			try (var is = Net.class.getResourceAsStream("testkeys")) {
 				hp.setSslContext(Net.getSSLContext("JKS", is, "passphrase".toCharArray()));
@@ -80,7 +80,7 @@ public class TodoMVC {
 
 	public HttpHandler handler;
 
-	public TodoMVC(Properties configuration) {
+	public TodoMvc(Properties configuration) {
 		this.configuration = configuration;
 		factory = new Factory();
 		factory.setTypes(Util.getPackageClasses(getClass().getPackageName()).toList());
@@ -89,7 +89,7 @@ public class TodoMVC {
 	}
 
 	@Handle(method = "GET", path = "/")
-	public TodoMVC application() {
+	public TodoMvc application() {
 		return this;
 	}
 }
