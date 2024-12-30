@@ -23,7 +23,7 @@
  */
 import { FlexibleElement } from "./flexible-element.js";
 
-export default class TodoApp extends FlexibleElement {
+class TodoApp extends FlexibleElement {
 
 	static get templateName() {
 		return "todo-app";
@@ -111,12 +111,11 @@ export default class TodoApp extends FlexibleElement {
 
 	async updateDisplay() {
 		// console.log("TodoApp.updateDisplay");
-		await super.updateDisplay();
-		this.interpolate ??= this.createInterpolateDom();
 		const tii = this.data.length;
 		const aii = this.data.reduce((x, y) => y.completed ? x : x + 1, 0);
 		const cii = tii - aii;
-		this.appendChild(this.interpolate({
+		this.appendChild(this.interpolateDom({
+			$template: "",
 			totalItems: tii,
 			activeItems: aii,
 			completedItems: cii,
@@ -124,3 +123,7 @@ export default class TodoApp extends FlexibleElement {
 		}));
 	}
 }
+
+customElements.define("todo-app", TodoApp);
+
+export default TodoApp;

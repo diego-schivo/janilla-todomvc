@@ -23,7 +23,7 @@
  */
 import { FlexibleElement } from "./flexible-element.js";
 
-export default class TodoItem extends FlexibleElement {
+class TodoItem extends FlexibleElement {
 
 	static get templateName() {
 		return "todo-item";
@@ -116,9 +116,8 @@ export default class TodoItem extends FlexibleElement {
 
 	async updateDisplay() {
 		// console.log("TodoItem.updateDisplay");
-		await super.updateDisplay();
-		this.interpolate ??= this.createInterpolateDom();
-		this.appendChild(this.interpolate({
+		this.appendChild(this.interpolateDom({
+			$template: "",
 			...this.dataset,
 			class: `todo-item ${this.dataset.edit ? "editing" : ""}`
 		}));
@@ -131,3 +130,7 @@ export default class TodoItem extends FlexibleElement {
 			this.querySelector(".toggle-todo-input").checked = this.dataset.completed === "true";
 	}
 }
+
+customElements.define("todo-item", TodoItem);
+
+export default TodoItem;

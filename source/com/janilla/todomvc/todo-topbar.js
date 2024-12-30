@@ -24,7 +24,7 @@
 import { FlexibleElement } from "./flexible-element.js";
 import { nanoid } from "./static/scripts/nanoid.js";
 
-export default class TodoTopbar extends FlexibleElement {
+class TodoTopbar extends FlexibleElement {
 
 	static get observedAttributes() {
 		return ["data-filter", "data-total-items", "data-active-items", "data-completed-items"];
@@ -37,7 +37,7 @@ export default class TodoTopbar extends FlexibleElement {
 	constructor() {
 		super();
 	}
-	
+
 	connectedCallback() {
 		// console.log("TodoTopbar.connectedCallback");
 		super.connectedCallback();
@@ -77,10 +77,11 @@ export default class TodoTopbar extends FlexibleElement {
 
 	async updateDisplay() {
 		// console.log("TodoTopbar.updateDisplay");
-		await super.updateDisplay();
-		this.interpolate ??= this.createInterpolateDom();
 		const totalItems = parseInt(this.dataset.totalItems);
-		this.appendChild(this.interpolate({ toggleAllStyle: `display:${totalItems ? "block" : "none"}` }));
+		this.appendChild(this.interpolateDom({
+			$template: "",
+			toggleAllStyle: `display:${totalItems ? "block" : "none"}`
+		}));
 		if (totalItems) {
 			const el = this.querySelector(".toggle-all-input");
 			switch (this.dataset.filter) {
@@ -99,3 +100,7 @@ export default class TodoTopbar extends FlexibleElement {
 		}
 	}
 }
+
+customElements.define("todo-topbar", TodoTopbar);
+
+export default TodoTopbar;

@@ -23,7 +23,7 @@
  */
 import { FlexibleElement } from "./flexible-element.js";
 
-export default class TodoList extends FlexibleElement {
+class TodoList extends FlexibleElement {
 
 	static get observedAttributes() {
 		return ["data-filter", "data-total-items"];
@@ -41,22 +41,22 @@ export default class TodoList extends FlexibleElement {
 
 	async updateDisplay() {
 		// console.log("TodoItem.updateDisplay");
-		await super.updateDisplay();
-		this.interpolate ??= this.createInterpolateDom();
-		this.appendChild(this.interpolate({
+		const ii = this.closest("todo-app").data;
+		this.appendChild(this.interpolateDom({
+			$template: "",
 			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
 			items: (() => {
-				const ii = this.closest("todo-app").data;
-				if (this.interpolateItems?.length !== ii.length)
-					this.interpolateItems = ii.map(() => this.createInterpolateDom("item"));
-				return ii.map((x, i) => this.interpolateItems[i]({
+				const c = this.dataset.filter !== "all" ? this.dataset.filter === "completed" : undefined;
+				return ii.map(x => ({
+					$template: "item",
 					...x,
-					style: (() => {
-						const c = this.dataset.filter !== "all" ? this.dataset.filter === "completed" : undefined;
-						return `display:${c === undefined || x.completed === c ? "block" : "none"}`;
-					})()
+					style: `display:${c === undefined || x.completed === c ? "block" : "none"}`
 				}));
 			})()
 		}));
 	}
 }
+
+customElements.define("todo-list", TodoList);
+
+export default TodoList;

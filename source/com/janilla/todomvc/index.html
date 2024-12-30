@@ -5,22 +5,30 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="A TodoMVC workload app written with janilla." />
         <title>TodoMVC: Janilla</title>
-        <style>html{visibility:hidden;opacity:0;}</style>
-        <link href="/style.css" rel="stylesheet" />
-        <script type="module" src="/script.js"></script>
+        <link rel="stylesheet" href="/global.css" />
+        <link rel="stylesheet" href="/header.css" />
+        <link rel="stylesheet" href="/footer.css" />
+        <link rel="stylesheet" href="/todo-topbar.css" />
+        <link rel="stylesheet" href="/todo-item.css" />
+        <link rel="stylesheet" href="/todo-list.css" />
+        <link rel="stylesheet" href="/todo-bottombar.css" />
+        <link rel="stylesheet" href="/todo-app.css" />
+        <script type="module" src="/todo-topbar.js"></script>
+        <script type="module" src="/todo-item.js"></script>
+        <script type="module" src="/todo-list.js"></script>
+        <script type="module" src="/todo-bottombar.js"></script>
+        <script type="module" src="/todo-app.js"></script>
     </head>
 
     <body>
         <header class="header">
-            <a href="#" style="text-decoration: none">
-            	<h1 class="title">todos</h1>
-            </a>
+            <a href="#" style="text-decoration: none"><h1 class="title">todos</h1></a>
         </header>
         <todo-app class="todo-app"></todo-app>
         <footer class="footer">
             <p class="footer-text">Double-click to edit a todo</p>
-			<p class="footer-text">Created by the TodoMVC and Janilla Teams</p>
-			<p class="footer-text">Part of <a href="http://todomvc.com">TodoMVC</a> and <a href="https://janilla.com">Janilla</a></p>
+			<p class="footer-text">Created by Diego Schivo and the TodoMVC Team</p>
+			<p class="footer-text">Part of <a href="https://janilla.com">Janilla</a></p>
         </footer>
     </body>
 </html>

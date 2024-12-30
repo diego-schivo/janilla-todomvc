@@ -23,7 +23,7 @@
  */
 import { FlexibleElement } from "./flexible-element.js";
 
-export default class TodoBottombar extends FlexibleElement {
+class TodoBottombar extends FlexibleElement {
 
 	static get observedAttributes() {
 		return ["data-active-items", "data-filter", "data-total-items"];
@@ -56,23 +56,22 @@ export default class TodoBottombar extends FlexibleElement {
 
 	async updateDisplay() {
 		// console.log("TodoBottombar.updateDisplay");
-		await super.updateDisplay();
-		this.interpolate ??= this.createInterpolateDom();
-		this.appendChild(this.interpolate({
+		const aii = parseInt(this.dataset.activeItems);
+		this.appendChild(this.interpolateDom({
+			$template: "",
 			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
-			todoStatusText: (() => {
-				const aii = parseInt(this.dataset.activeItems);
-				return `${aii} ${aii === 1 ? "item" : "items"} left!`;
-			})(),
-			filterItems: (() => {
-				this.interpolateFilterItems ??= Array.from({ length: 3 }, () => this.createInterpolateDom("filter-item"));
-				return ["all", "active", "completed"].map((x, i) => this.interpolateFilterItems[i]({
-					id: `filter-link-${x}`,
-					class: `filter-link ${x === this.dataset.filter ? "selected" : ""}`,
-					href: `#/${x !== "all" ? x : ""}`,
-					text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
-				}));
-			})()
+			todoStatusText: `${aii} ${aii === 1 ? "item" : "items"} left!`,
+			filterItems: ["all", "active", "completed"].map(x => ({
+				$template: "filter-item",
+				id: `filter-link-${x}`,
+				class: `filter-link ${x === this.dataset.filter ? "selected" : ""}`,
+				href: `#/${x !== "all" ? x : ""}`,
+				text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
+			}))
 		}));
 	}
 }
+
+customElements.define("todo-bottombar", TodoBottombar);
+
+export default TodoBottombar;
