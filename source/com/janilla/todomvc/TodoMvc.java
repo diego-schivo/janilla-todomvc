@@ -23,12 +23,13 @@
  */
 package com.janilla.todomvc;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Properties;
+
+import javax.net.ssl.SSLContext;
 
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpProtocol;
@@ -54,20 +55,20 @@ public class TodoMvc {
 						p = System.getProperty("user.home") + p.substring(1);
 					pp.load(Files.newInputStream(Path.of(p)));
 				}
-			} catch (IOException e) {
-				throw new UncheckedIOException(e);
 			}
-			var a = new TodoMvc(pp);
-			var hp = a.factory.create(HttpProtocol.class);
-			try (var is = Net.class.getResourceAsStream("testkeys")) {
-				hp.setSslContext(Net.getSSLContext("JKS", is, "passphrase".toCharArray()));
-			} catch (IOException e) {
-				throw new UncheckedIOException(e);
+			var tm = new TodoMvc(pp);
+			Server s;
+			{
+				var a = new InetSocketAddress(
+						Integer.parseInt(tm.configuration.getProperty("todomvc.server.port")));
+				SSLContext sc;
+				try (var is = Net.class.getResourceAsStream("testkeys")) {
+					sc = Net.getSSLContext("JKS", is, "passphrase".toCharArray());
+				}
+				var p = tm.factory.create(HttpProtocol.class,
+						Map.of("handler", tm.handler, "sslContext", sc, "useClientMode", false));
+				s = new Server(a, p);
 			}
-			hp.setHandler(a.handler);
-			var s = new Server();
-			s.setAddress(new InetSocketAddress(Integer.parseInt(a.configuration.getProperty("todomvc.server.port"))));
-			s.setProtocol(hp);
 			s.serve();
 		} catch (Throwable e) {
 			e.printStackTrace();

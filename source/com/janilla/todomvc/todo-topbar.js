@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { FlexibleElement } from "./flexible-element.js";
+import { UpdatableHTMLElement } from "./updatable-html-element.js";
 import { nanoid } from "./static/scripts/nanoid.js";
 
-class TodoTopbar extends FlexibleElement {
+class TodoTopbar extends UpdatableHTMLElement {
 
 	static get observedAttributes() {
 		return ["data-filter", "data-total-items", "data-active-items", "data-completed-items"];
