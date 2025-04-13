@@ -33,6 +33,7 @@ import javax.net.ssl.SSLContext;
 
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpProtocol;
+import com.janilla.json.MapAndType;
 import com.janilla.net.Net;
 import com.janilla.net.Server;
 import com.janilla.reflect.Factory;
@@ -81,11 +82,15 @@ public class TodoMvc {
 
 	public HttpHandler handler;
 
+	public MapAndType.TypeResolver typeResolver;
+
+	public Iterable<Class<?>> types;
+
 	public TodoMvc(Properties configuration) {
 		this.configuration = configuration;
-		factory = new Factory();
-		factory.setTypes(Util.getPackageClasses(getClass().getPackageName()).toList());
-		factory.setSource(this);
+		types = Util.getPackageClasses(getClass().getPackageName()).toList();
+		factory = new Factory(types, this);
+		typeResolver = factory.create(MapAndType.DollarTypeResolver.class);
 		handler = factory.create(ApplicationHandlerBuilder.class).build();
 	}
 

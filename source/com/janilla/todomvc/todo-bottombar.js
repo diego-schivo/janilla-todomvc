@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { UpdatableHTMLElement } from "./updatable-html-element.js";
+import { WebComponent } from "./web-component.js";
 
-class TodoBottombar extends UpdatableHTMLElement {
+class TodoBottombar extends WebComponent {
 
 	static get observedAttributes() {
 		return ["data-active-items", "data-filter", "data-total-items"];

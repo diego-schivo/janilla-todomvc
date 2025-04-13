@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { UpdatableHTMLElement } from "./updatable-html-element.js";
+import { WebComponent } from "./web-component.js";
 
-class TodoApp extends UpdatableHTMLElement {
+class TodoApp extends WebComponent {
 
 	static get templateName() {
 		return "todo-app";
@@ -62,7 +62,7 @@ class TodoApp extends UpdatableHTMLElement {
 		// console.log("TodoApp.handleAddItem", event);
 		const { detail: item } = event;
 		this.data.push(item);
-		this.requestUpdate();
+		this.requestDisplay();
 	}
 
 	handleClearCompleted = event => {
@@ -70,12 +70,12 @@ class TodoApp extends UpdatableHTMLElement {
 		for (let i = this.data.length - 1; i >= 0; i--)
 			if (this.data[i].completed)
 				this.data.splice(i, 1);
-		this.requestUpdate();
+		this.requestDisplay();
 	}
 
 	handleHashChange = event => {
 		// console.log("TodoApp.handleHashChange", event);
-		this.requestUpdate();
+		this.requestDisplay();
 	}
 
 	handleRemoveItem = event => {
@@ -84,29 +84,29 @@ class TodoApp extends UpdatableHTMLElement {
 		for (let i = this.data.length - 1; i >= 0; i--)
 			if (this.data[i].id === id)
 				this.data.splice(i, 1);
-		this.requestUpdate();
+		this.requestDisplay();
 	}
 
 	handleToggleItem = event => {
 		// console.log("TodoApp.handleToggleItem", event);
 		const { detail: item } = event;
 		this.data.find(x => x.id === item.id).completed = item.completed;
-		this.requestUpdate();
+		this.requestDisplay();
 	}
 
 	handleToggleAll = event => {
 		// console.log("TodoApp.handleToggleAll", event);
 		const { detail: { completed } } = event;
 		this.data.forEach(x => x.completed = completed);
-		this.requestUpdate();
-		this.querySelector("todo-list").requestUpdate();
+		this.requestDisplay();
+		this.querySelector("todo-list").requestDisplay();
 	}
 
 	handleUpdateItem = event => {
 		// console.log("TodoApp.handleUpdateItem", event);
 		const { detail: item } = event;
 		this.data.find(x => x.id === item.id).title = item.title;
-		this.querySelector("todo-list").requestUpdate();
+		this.querySelector("todo-list").requestDisplay();
 	}
 
 	async updateDisplay() {

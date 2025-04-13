@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import { UpdatableHTMLElement } from "./updatable-html-element.js";
+import { WebComponent } from "./web-component.js";
 
-class TodoItem extends UpdatableHTMLElement {
+class TodoItem extends WebComponent {
 
 	static get templateName() {
 		return "todo-item";
@@ -52,7 +52,7 @@ class TodoItem extends UpdatableHTMLElement {
 		// console.log("TodoItem.handleBlur", event);
 		event.currentTarget.removeEventListener("blur", this.handleBlur);
 		delete this.dataset.edit;
-		this.requestUpdate();
+		this.requestDisplay();
 	}
 
 	handleChange = event => {
@@ -76,7 +76,7 @@ class TodoItem extends UpdatableHTMLElement {
 				this.textClickTime = t;
 				if (x > 0 && x < 500) {
 					this.dataset.edit = true;
-					this.requestUpdate();
+					this.requestDisplay();
 				}
 			}
 		} else if (event.target.matches(".remove-todo-button"))
