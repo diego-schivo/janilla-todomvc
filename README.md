@@ -24,10 +24,10 @@ The only requirement is an installation of Java and Maven, to be able to compile
 ```
 terminal:
 1. mvn compile
-2. mvn exec:java
+2. mvn exec:exec
 
 browser:
-1. http://localhost:7001/
+1. https://localhost:8443/
 ```
 
 ### Set up the project in an IDE
