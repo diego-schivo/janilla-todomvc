@@ -47,6 +47,7 @@ class TodoTopbar extends WebComponent {
 
 	disconnectedCallback() {
 		// console.log("TodoTopbar.disconnectedCallback");
+		super.disconnectedCallback();
 		this.removeEventListener("change", this.handleChange);
 		this.removeEventListener("keyup", this.handleKeyUp);
 	}

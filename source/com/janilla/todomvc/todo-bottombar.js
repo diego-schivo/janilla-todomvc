@@ -45,6 +45,7 @@ class TodoBottombar extends WebComponent {
 
 	disconnectedCallback() {
 		// console.log("TodoBottombar.disconnectedCallback");
+		super.disconnectedCallback();
 		this.removeEventListener("click", this.handleClick);
 	}
 

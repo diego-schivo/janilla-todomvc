@@ -49,6 +49,7 @@ class TodoApp extends WebComponent {
 
 	disconnectedCallback() {
 		// console.log("TodoApp.disconnectedCallback");
+		super.disconnectedCallback();
 		removeEventListener("hashchange", this.handleHashChange);
 		this.removeEventListener("add-item", this.handleAddItem);
 		this.removeEventListener("clear-completed", this.handleClearCompleted);

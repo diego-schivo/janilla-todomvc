@@ -43,6 +43,7 @@ class TodoItem extends WebComponent {
 
 	disconnectedCallback() {
 		// console.log("TodoItem.disconnectedCallback");
+		super.disconnectedCallback();
 		this.removeEventListener("change", this.handleChange);
 		this.removeEventListener("click", this.handleClick);
 		this.removeEventListener("keyup", this.handleKeyUp);

@@ -33,8 +33,6 @@ class TodoList extends WebComponent {
 		return "todo-list";
 	}
 
-	// items = [];
-
 	constructor() {
 		super();
 	}
