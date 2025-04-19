@@ -15,8 +15,8 @@ This implementation uses an in-memory data object that implements a simple array
 The only requirement is an installation of Java and Maven, to be able to compile the project and serve a local server.
 
 ```
-* Java (min version: 21.0.1)
-* Maven (min version: 3.9.0)
+* Java (version: 24.0.1)
+* Maven (version: 3.9.9)
 ```
 
 ## Local preview
