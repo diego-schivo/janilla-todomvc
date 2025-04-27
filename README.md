@@ -32,4 +32,4 @@ browser:
 
 ### Set up the project in an IDE
 
-[Step-by-step Video Tutorial](https://youtu.be/-gPWaLrSRwE) available on our [YouTube Channel](https://www.youtube.com/@janilla).
+[Step-by-step Video Tutorial](https://youtu.be/-gPWaLrSRwE) available on [Janilla YouTube Channel](https://www.youtube.com/@janilla).
