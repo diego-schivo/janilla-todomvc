@@ -25,8 +25,8 @@ import WebComponent from "./web-component.js";
 
 class TodoApp extends WebComponent {
 
-	static get templateName() {
-		return "todo-app";
+	static get templateNames() {
+		return ["todo-app"];
 	}
 
 	data = [];

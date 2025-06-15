@@ -29,8 +29,8 @@ class TodoList extends WebComponent {
 		return ["data-filter", "data-total-items"];
 	}
 
-	static get templateName() {
-		return "todo-list";
+	static get templateNames() {
+		return ["todo-list"];
 	}
 
 	constructor() {

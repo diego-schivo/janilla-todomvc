@@ -25,8 +25,8 @@ import WebComponent from "./web-component.js";
 
 class TodoItem extends WebComponent {
 
-	static get templateName() {
-		return "todo-item";
+	static get templateNames() {
+		return ["todo-item"];
 	}
 
 	constructor() {

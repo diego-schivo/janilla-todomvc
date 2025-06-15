@@ -29,8 +29,8 @@ class TodoBottombar extends WebComponent {
 		return ["data-active-items", "data-filter", "data-total-items"];
 	}
 
-	static get templateName() {
-		return "todo-bottombar";
+	static get templateNames() {
+		return ["todo-bottombar"];
 	}
 
 	constructor() {

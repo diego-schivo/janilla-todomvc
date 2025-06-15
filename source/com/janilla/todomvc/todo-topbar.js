@@ -30,8 +30,8 @@ class TodoTopbar extends WebComponent {
 		return ["data-filter", "data-total-items", "data-active-items", "data-completed-items"];
 	}
 
-	static get templateName() {
-		return "todo-topbar";
+	static get templateNames() {
+		return ["todo-topbar"];
 	}
 
 	constructor() {
