@@ -21,50 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.janilla.todomvc;
+package com.janilla.todomvc.test;
 
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
+import com.janilla.http.HttpExchange;
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpServer;
 import com.janilla.json.MapAndType;
 import com.janilla.net.Net;
 import com.janilla.reflect.Factory;
+import com.janilla.todomvc.TodoMvc;
 import com.janilla.util.Util;
 import com.janilla.web.ApplicationHandlerBuilder;
 import com.janilla.web.Handle;
 import com.janilla.web.Render;
 
 @Render(template = "index.html")
-public class TodoMvc {
+public class TodoMvcTest {
 
 	public static void main(String[] args) {
 		try {
 			var pp = new Properties();
-			try (var is = TodoMvc.class.getResourceAsStream("configuration.properties")) {
-				pp.load(is);
+			try (var s1 = TodoMvcTest.class.getResourceAsStream("configuration.properties")) {
+				pp.load(s1);
 				if (args.length > 0) {
 					var p = args[0];
 					if (p.startsWith("~"))
 						p = System.getProperty("user.home") + p.substring(1);
-					pp.load(Files.newInputStream(Path.of(p)));
+					try (var s2 = Files.newInputStream(Path.of(p))) {
+						pp.load(s2);
+					}
 				}
 			}
-			var tm = new TodoMvc(pp);
+			var x = new TodoMvcTest(pp);
 			HttpServer s;
 			{
-				SSLContext sc;
+				SSLContext c;
 				try (var is = Net.class.getResourceAsStream("testkeys")) {
-					sc = Net.getSSLContext("JKS", is, "passphrase".toCharArray());
+					c = Net.getSSLContext("JKS", is, "passphrase".toCharArray());
 				}
-				s = new HttpServer(sc, tm.handler);
+				s = x.factory.create(HttpServer.class, Map.of("sslContext", c, "handler", x.handler));
 			}
-			var p = Integer.parseInt(tm.configuration.getProperty("todomvc.server.port"));
+			var p = Integer.parseInt(x.configuration.getProperty("todomvc.server.port"));
 			s.serve(new InetSocketAddress(p));
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -75,22 +81,38 @@ public class TodoMvc {
 
 	public Factory factory;
 
+	public TodoMvc main;
+
 	public HttpHandler handler;
 
 	public MapAndType.TypeResolver typeResolver;
 
-	public Iterable<Class<?>> types;
+	public List<Class<?>> types;
 
-	public TodoMvc(Properties configuration) {
+	public TodoMvcTest(Properties configuration) {
 		this.configuration = configuration;
+
 		types = Util.getPackageClasses(getClass().getPackageName()).toList();
 		factory = new Factory(types, this);
 		typeResolver = factory.create(MapAndType.DollarTypeResolver.class);
-		handler = factory.create(ApplicationHandlerBuilder.class).build();
+
+		main = new TodoMvc(configuration);
+
+		{
+			var b = factory.create(ApplicationHandlerBuilder.class);
+			var h = b.build();
+			handler = x -> {
+				var ex = (HttpExchange) x;
+//				System.out.println(
+//						"TodoMvcTest, " + ex.getRequest().getPath() + ", Test.ongoing=" + Test.ongoing.get());
+				var h2 = Test.ONGOING.get() && !ex.getRequest().getPath().startsWith("/test/") ? main.handler : h;
+				return h2.handle(ex);
+			};
+		}
 	}
 
 	@Handle(method = "GET", path = "/")
-	public TodoMvc application() {
+	public TodoMvcTest application() {
 		return this;
 	}
 }

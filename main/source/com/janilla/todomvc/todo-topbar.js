@@ -39,21 +39,18 @@ class TodoTopbar extends WebComponent {
 	}
 
 	connectedCallback() {
-		// console.log("TodoTopbar.connectedCallback");
 		super.connectedCallback();
 		this.addEventListener("change", this.handleChange);
 		this.addEventListener("keyup", this.handleKeyUp);
 	}
 
 	disconnectedCallback() {
-		// console.log("TodoTopbar.disconnectedCallback");
 		super.disconnectedCallback();
 		this.removeEventListener("change", this.handleChange);
 		this.removeEventListener("keyup", this.handleKeyUp);
 	}
 
 	handleChange = event => {
-		// console.log("TodoTopbar.handleChange", event);
 		if (event.target.matches(".toggle-all-input"))
 			this.dispatchEvent(new CustomEvent("toggle-all", {
 				bubbles: true,
@@ -62,26 +59,24 @@ class TodoTopbar extends WebComponent {
 	}
 
 	handleKeyUp = event => {
-		// console.log("TodoTopbar.handleKeyUp", event);
-		if (event.key !== "Enter" || !event.target.value)
-			return;
-		this.dispatchEvent(new CustomEvent("add-item", {
-			bubbles: true,
-			detail: {
-				id: nanoid(),
-				title: event.target.value,
-				completed: false,
-			}
-		}));
-		event.target.value = "";
+		if (event.key === "Enter" && event.target.value) {
+			this.dispatchEvent(new CustomEvent("add-item", {
+				bubbles: true,
+				detail: {
+					id: nanoid(),
+					title: event.target.value,
+					completed: false,
+				}
+			}));
+			event.target.value = "";
+		}
 	}
 
 	async updateDisplay() {
-		// console.log("TodoTopbar.updateDisplay");
 		const totalItems = parseInt(this.dataset.totalItems);
 		this.appendChild(this.interpolateDom({
 			$template: "",
-			toggleAllStyle: `display:${totalItems ? "block" : "none"}`
+			display: totalItems ? "block" : "none"
 		}));
 		if (totalItems) {
 			const el = this.querySelector(".toggle-all-input");
@@ -101,7 +96,5 @@ class TodoTopbar extends WebComponent {
 		}
 	}
 }
-
-customElements.define("todo-topbar", TodoTopbar);
 
 export default TodoTopbar;

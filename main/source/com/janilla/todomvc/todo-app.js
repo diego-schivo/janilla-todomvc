@@ -36,7 +36,6 @@ class TodoApp extends WebComponent {
 	}
 
 	connectedCallback() {
-		// console.log("TodoApp.connectedCallback");
 		super.connectedCallback();
 		addEventListener("hashchange", this.handleHashChange);
 		this.addEventListener("add-item", this.handleAddItem);
@@ -48,7 +47,6 @@ class TodoApp extends WebComponent {
 	}
 
 	disconnectedCallback() {
-		// console.log("TodoApp.disconnectedCallback");
 		super.disconnectedCallback();
 		removeEventListener("hashchange", this.handleHashChange);
 		this.removeEventListener("add-item", this.handleAddItem);
@@ -60,27 +58,23 @@ class TodoApp extends WebComponent {
 	}
 
 	handleAddItem = event => {
-		// console.log("TodoApp.handleAddItem", event);
 		const { detail: item } = event;
 		this.data.push(item);
 		this.requestDisplay();
 	}
 
-	handleClearCompleted = event => {
-		// console.log("TodoApp.handleClearCompleted", event);
+	handleClearCompleted = _ => {
 		for (let i = this.data.length - 1; i >= 0; i--)
 			if (this.data[i].completed)
 				this.data.splice(i, 1);
 		this.requestDisplay();
 	}
 
-	handleHashChange = event => {
-		// console.log("TodoApp.handleHashChange", event);
+	handleHashChange = _ => {
 		this.requestDisplay();
 	}
 
 	handleRemoveItem = event => {
-		// console.log("TodoApp.handleRemoveItem", event);
 		const { detail: { id } } = event;
 		for (let i = this.data.length - 1; i >= 0; i--)
 			if (this.data[i].id === id)
@@ -89,14 +83,12 @@ class TodoApp extends WebComponent {
 	}
 
 	handleToggleItem = event => {
-		// console.log("TodoApp.handleToggleItem", event);
 		const { detail: item } = event;
 		this.data.find(x => x.id === item.id).completed = item.completed;
 		this.requestDisplay();
 	}
 
 	handleToggleAll = event => {
-		// console.log("TodoApp.handleToggleAll", event);
 		const { detail: { completed } } = event;
 		this.data.forEach(x => x.completed = completed);
 		this.requestDisplay();
@@ -104,27 +96,23 @@ class TodoApp extends WebComponent {
 	}
 
 	handleUpdateItem = event => {
-		// console.log("TodoApp.handleUpdateItem", event);
 		const { detail: item } = event;
 		this.data.find(x => x.id === item.id).title = item.title;
 		this.querySelector("todo-list").requestDisplay();
 	}
 
 	async updateDisplay() {
-		// console.log("TodoApp.updateDisplay");
-		const tii = this.data.length;
-		const aii = this.data.reduce((x, y) => y.completed ? x : x + 1, 0);
-		const cii = tii - aii;
+		const t = this.data.length;
+		const a = this.data.reduce((x, y) => y.completed ? x : x + 1, 0);
+		const c = t - a;
 		this.appendChild(this.interpolateDom({
 			$template: "",
-			totalItems: tii,
-			activeItems: aii,
-			completedItems: cii,
+			totalItems: t,
+			activeItems: a,
+			completedItems: c,
 			filter: location.hash.split("/")[1] || "all",
 		}));
 	}
 }
-
-customElements.define("todo-app", TodoApp);
 
 export default TodoApp;

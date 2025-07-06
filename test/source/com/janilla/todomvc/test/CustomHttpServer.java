@@ -21,40 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import WebComponent from "./web-component.js";
+package com.janilla.todomvc.test;
 
-class TodoList extends WebComponent {
+import javax.net.ssl.SSLContext;
 
-	static get observedAttributes() {
-		return ["data-filter", "data-total-items"];
+import com.janilla.http.HttpExchange;
+import com.janilla.http.HttpHandler;
+import com.janilla.http.HttpRequest;
+import com.janilla.http.HttpServer;
+import com.janilla.todomvc.TodoMvc;
+
+public class CustomHttpServer extends HttpServer {
+
+	public TodoMvc main;
+
+	public CustomHttpServer(SSLContext sslContext, HttpHandler handler) {
+		super(sslContext, handler);
 	}
 
-	static get templateNames() {
-		return ["todo-list"];
-	}
-
-	constructor() {
-		super();
-	}
-
-	async updateDisplay() {
-		// console.log("TodoItem.updateDisplay");
-		const ii = this.closest("todo-app").data;
-		this.appendChild(this.interpolateDom({
-			$template: "",
-			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
-			items: (() => {
-				const c = this.dataset.filter !== "all" ? this.dataset.filter === "completed" : undefined;
-				return ii.map(x => ({
-					$template: "item",
-					...x,
-					style: `display:${c === undefined || x.completed === c ? "block" : "none"}`
-				}));
-			})()
-		}));
+	@Override
+	protected HttpExchange createExchange(HttpRequest request) {
+		return Test.ONGOING.get() // && request.getPath().startsWith("/api/")
+				? main.factory.create(HttpExchange.class)
+				: super.createExchange(request);
 	}
 }
-
-customElements.define("todo-list", TodoList);
-
-export default TodoList;

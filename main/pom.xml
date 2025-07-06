@@ -2,41 +2,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.janilla</groupId>
-	<artifactId>janilla-todomvc</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<dependencies>
-		<dependency>
-			<groupId>com.janilla</groupId>
-			<artifactId>janilla</artifactId>
-			<version>6.0.0</version>
-		</dependency>
-	</dependencies>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>com.janilla</groupId>
-				<artifactId>janilla-todomvc-main</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>com.janilla</groupId>
-				<artifactId>janilla-todomvc-test</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-	<modules>
-		<module>main</module>
-		<module>test</module>
-	</modules>
-	<properties>
-		<maven.compiler.enablePreview>true</maven.compiler.enablePreview>
-		<maven.compiler.parameters>true</maven.compiler.parameters>
-		<maven.compiler.release>24</maven.compiler.release>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+	<artifactId>janilla-todomvc-main</artifactId>
+	<parent>
+		<groupId>com.janilla</groupId>
+		<artifactId>janilla-todomvc</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
 	<build>
 		<sourceDirectory>./source</sourceDirectory>
 		<resources>
@@ -51,6 +22,14 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<executable>java</executable>
 					<arguments>
@@ -63,22 +42,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<version>3.5.0</version>
-					<executions>
-						<execution>
-							<goals>
-								<goal>exec</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 	<name>Janilla TodoMVC</name>
 	<description>A TodoMVC written with Janilla</description>

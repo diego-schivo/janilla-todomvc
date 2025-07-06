@@ -34,7 +34,6 @@ class TodoItem extends WebComponent {
 	}
 
 	connectedCallback() {
-		// console.log("TodoItem.connectedCallback");
 		super.connectedCallback();
 		this.addEventListener("change", this.handleChange);
 		this.addEventListener("click", this.handleClick);
@@ -42,7 +41,6 @@ class TodoItem extends WebComponent {
 	}
 
 	disconnectedCallback() {
-		// console.log("TodoItem.disconnectedCallback");
 		super.disconnectedCallback();
 		this.removeEventListener("change", this.handleChange);
 		this.removeEventListener("click", this.handleClick);
@@ -50,14 +48,12 @@ class TodoItem extends WebComponent {
 	}
 
 	handleBlur = event => {
-		// console.log("TodoItem.handleBlur", event);
 		event.currentTarget.removeEventListener("blur", this.handleBlur);
 		delete this.dataset.edit;
 		this.requestDisplay();
 	}
 
 	handleChange = event => {
-		// console.log("TodoItem.handleChange", event);
 		if (event.target.matches(".toggle-todo-input"))
 			this.dispatchEvent(new CustomEvent("toggle-item", {
 				bubbles: true,
@@ -69,7 +65,6 @@ class TodoItem extends WebComponent {
 	}
 
 	handleClick = event => {
-		// console.log("TodoItem.handleClick", event);
 		if (event.target.matches(".todo-item-text")) {
 			if (!this.dataset.edit) {
 				const t = new Date().getTime();
@@ -88,7 +83,6 @@ class TodoItem extends WebComponent {
 	}
 
 	handleKeyUp = event => {
-		// console.log("TodoItem.handleKeyUp", event);
 		switch (event.key) {
 			case "Enter":
 				if (event.target.value !== this.dataset.title) {
@@ -106,32 +100,27 @@ class TodoItem extends WebComponent {
 							}
 						}));
 				}
+				this.querySelector(".edit-todo-input").blur();
 				break;
 			case "Esc":
+				this.querySelector(".edit-todo-input").blur();
 				break;
-			default:
-				return;
 		}
-		this.querySelector(".edit-todo-input").blur();
 	}
 
 	async updateDisplay() {
-		// console.log("TodoItem.updateDisplay");
 		this.appendChild(this.interpolateDom({
 			$template: "",
 			...this.dataset,
-			class: `todo-item ${this.dataset.edit ? "editing" : ""}`
+			checked: this.dataset.completed === "true",
+			editing: this.dataset.edit ? "editing" : null
 		}));
 		if (this.dataset.edit) {
 			const el = this.querySelector(".edit-todo-input");
-			el.value = this.dataset.title;
 			el.focus();
 			el.addEventListener("blur", this.handleBlur);
-		} else
-			this.querySelector(".toggle-todo-input").checked = this.dataset.completed === "true";
+		}
 	}
 }
-
-customElements.define("todo-item", TodoItem);
 
 export default TodoItem;

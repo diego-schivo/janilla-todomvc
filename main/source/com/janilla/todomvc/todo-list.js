@@ -23,56 +23,31 @@
  */
 import WebComponent from "./web-component.js";
 
-class TodoBottombar extends WebComponent {
+class TodoList extends WebComponent {
 
 	static get observedAttributes() {
-		return ["data-active-items", "data-filter", "data-total-items"];
+		return ["data-filter", "data-total-items"];
 	}
 
 	static get templateNames() {
-		return ["todo-bottombar"];
+		return ["todo-list"];
 	}
 
 	constructor() {
 		super();
 	}
 
-	connectedCallback() {
-		// console.log("TodoBottombar.connectedCallback");
-		super.connectedCallback();
-		this.addEventListener("click", this.handleClick);
-	}
-
-	disconnectedCallback() {
-		// console.log("TodoBottombar.disconnectedCallback");
-		super.disconnectedCallback();
-		this.removeEventListener("click", this.handleClick);
-	}
-
-	handleClick = event => {
-		// console.log("TodoBottombar.handleClick", event);
-		if (event.target.matches(".clear-completed-button"))
-			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
-	}
-
 	async updateDisplay() {
-		// console.log("TodoBottombar.updateDisplay");
-		const aii = parseInt(this.dataset.activeItems);
 		this.appendChild(this.interpolateDom({
 			$template: "",
-			style: `display:${parseInt(this.dataset.totalItems) ? "block" : "none"}`,
-			todoStatusText: `${aii} ${aii === 1 ? "item" : "items"} left!`,
-			filterItems: ["all", "active", "completed"].map(x => ({
-				$template: "filter-item",
-				id: `filter-link-${x}`,
-				class: `filter-link ${x === this.dataset.filter ? "selected" : ""}`,
-				href: `#/${x !== "all" ? x : ""}`,
-				text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
+			display: parseInt(this.dataset.totalItems) ? "block" : "none",
+			items: this.closest("todo-app").data.map(x => ({
+				$template: "item",
+				...x,
+				display: this.dataset.filter === "all" || x.completed === (this.dataset.filter === "completed") ? "block" : "none"
 			}))
 		}));
 	}
 }
 
-customElements.define("todo-bottombar", TodoBottombar);
-
-export default TodoBottombar;
+export default TodoList;
