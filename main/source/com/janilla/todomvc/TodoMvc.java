@@ -27,6 +27,8 @@ import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 
@@ -82,12 +84,12 @@ public class TodoMvc {
 
 	public MapAndType.TypeResolver typeResolver;
 
-	public Iterable<Class<?>> types;
+	public Set<Class<?>> types;
 
 	public TodoMvc(Properties configuration) {
 		this.configuration = configuration;
 		types = Util.getPackageClasses(getClass().getPackageName()).filter(x -> !x.getPackageName().endsWith(".test"))
-				.toList();
+				.collect(Collectors.toSet());
 		factory = new Factory(types, this);
 		typeResolver = factory.create(MapAndType.DollarTypeResolver.class);
 		handler = factory.create(ApplicationHandlerBuilder.class).build();
