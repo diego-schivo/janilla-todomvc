@@ -36,12 +36,12 @@ import javax.net.ssl.SSLContext;
 import com.janilla.http.HttpExchange;
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpServer;
+import com.janilla.java.Java;
 import com.janilla.json.DollarTypeResolver;
 import com.janilla.json.TypeResolver;
 import com.janilla.net.Net;
 import com.janilla.reflect.Factory;
 import com.janilla.todomvc.TodoMvc;
-import com.janilla.util.Util;
 import com.janilla.web.ApplicationHandlerFactory;
 import com.janilla.web.Handle;
 import com.janilla.web.NotFoundException;
@@ -52,29 +52,34 @@ public class TodoMvcTest {
 
 	public static void main(String[] args) {
 		try {
-			var pp = new Properties();
-			try (var s1 = TodoMvcTest.class.getResourceAsStream("configuration.properties")) {
-				pp.load(s1);
+			TodoMvcTest a;
+			{
+				var c = new Properties();
+				try (var x = TodoMvcTest.class.getResourceAsStream("configuration.properties")) {
+					c.load(x);
+				}
 				if (args.length > 0) {
-					var p = args[0];
-					if (p.startsWith("~"))
-						p = System.getProperty("user.home") + p.substring(1);
-					try (var s2 = Files.newInputStream(Path.of(p))) {
-						pp.load(s2);
+					var f = args[0];
+					if (f.startsWith("~"))
+						f = System.getProperty("user.home") + f.substring(1);
+					try (var x = Files.newInputStream(Path.of(f))) {
+						c.load(x);
 					}
 				}
+				a = new TodoMvcTest(c);
 			}
-			var x = new TodoMvcTest(pp);
+
 			HttpServer s;
 			{
 				SSLContext c;
-				try (var is = Net.class.getResourceAsStream("testkeys")) {
-					c = Net.getSSLContext("JKS", is, "passphrase".toCharArray());
+				try (var x = Net.class.getResourceAsStream("testkeys")) {
+					c = Net.getSSLContext(Map.entry("JKS", x), "passphrase".toCharArray());
 				}
-				s = x.factory.create(HttpServer.class, Map.of("sslContext", c, "handler", x.handler));
+				var p = Integer.parseInt(a.configuration.getProperty("todomvc.server.port"));
+				s = a.factory.create(HttpServer.class,
+						Map.of("sslContext", c, "endpoint", new InetSocketAddress(p), "handler", a.handler));
 			}
-			var p = Integer.parseInt(x.configuration.getProperty("todomvc.server.port"));
-			s.serve(new InetSocketAddress(p));
+			s.serve();
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -95,7 +100,7 @@ public class TodoMvcTest {
 	public TodoMvcTest(Properties configuration) {
 		this.configuration = configuration;
 
-		types = Util.getPackageClasses(getClass().getPackageName()).toList();
+		types = Java.getPackageClasses(TodoMvcTest.class.getPackageName());
 		factory = new Factory(types, this);
 		typeResolver = factory.create(DollarTypeResolver.class);
 
@@ -105,7 +110,7 @@ public class TodoMvcTest {
 			var f = factory.create(ApplicationHandlerFactory.class);
 			handler = x -> {
 				var ex = (HttpExchange) x;
-//				System.out.println(
+//				IO.println(
 //						"TodoMvcTest, " + ex.request().getPath() + ", Test.ongoing=" + Test.ongoing.get());
 				var h2 = Test.ONGOING.get() && !ex.request().getPath().startsWith("/test/") ? main.handler
 						: (HttpHandler) y -> {
