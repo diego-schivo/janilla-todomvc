@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
 
@@ -49,6 +50,8 @@ import com.janilla.web.Render;
 
 @Render(template = "index.html")
 public class TodoMvcTest {
+
+	public static final AtomicReference<TodoMvcTest> INSTANCE = new AtomicReference<>();
 
 	public static void main(String[] args) {
 		try {
@@ -98,10 +101,12 @@ public class TodoMvcTest {
 	public List<Class<?>> types;
 
 	public TodoMvcTest(Properties configuration) {
+		if (!INSTANCE.compareAndSet(null, this))
+			throw new IllegalStateException();
 		this.configuration = configuration;
 
 		types = Java.getPackageClasses(TodoMvcTest.class.getPackageName());
-		factory = new Factory(types, this);
+		factory = new Factory(types, INSTANCE::get);
 		typeResolver = factory.create(DollarTypeResolver.class);
 
 		main = new TodoMvc(configuration);

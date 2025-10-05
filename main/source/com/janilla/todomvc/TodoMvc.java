@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
@@ -50,6 +51,8 @@ import com.janilla.web.Render;
 
 @Render(template = "index.html")
 public class TodoMvc {
+
+	public static final AtomicReference<TodoMvc> INSTANCE = new AtomicReference<>();
 
 	public static void main(String[] args) {
 		try {
@@ -97,20 +100,20 @@ public class TodoMvc {
 	public List<Class<?>> types;
 
 	public TodoMvc(Properties configuration) {
+		if (!INSTANCE.compareAndSet(null, this))
+			throw new IllegalStateException();
 		this.configuration = configuration;
 		types = Java.getPackageClasses(TodoMvc.class.getPackageName()).stream()
 				.filter(x -> !x.getPackageName().endsWith(".test")).toList();
-		factory = new Factory(types, this);
+		factory = new Factory(types, INSTANCE::get);
 		typeResolver = factory.create(DollarTypeResolver.class);
 
 		{
-			var f = factory.create(ApplicationHandlerFactory.class,
-					Map.of("methods", types.stream().flatMap(
-							x -> Arrays.stream(x.getMethods()).map(y -> new ClassAndMethod(x, y)))
-							.toList(), "files",
-							Stream.of("com.janilla.frontend", TodoMvc.class.getPackageName())
-									.flatMap(x -> Java.getPackagePaths(x).stream().filter(Files::isRegularFile))
-									.toList()));
+			var f = factory.create(ApplicationHandlerFactory.class, Map.of("methods",
+					types.stream().flatMap(x -> Arrays.stream(x.getMethods()).map(y -> new ClassAndMethod(x, y)))
+							.toList(),
+					"files", Stream.of("com.janilla.frontend", TodoMvc.class.getPackageName())
+							.flatMap(x -> Java.getPackagePaths(x).stream().filter(Files::isRegularFile)).toList()));
 			handler = x -> {
 				var h = f.createHandler(Objects.requireNonNullElse(x.exception(), x.request()));
 				if (h == null)
