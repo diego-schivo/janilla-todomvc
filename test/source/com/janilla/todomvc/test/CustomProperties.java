@@ -23,30 +23,27 @@
  */
 package com.janilla.todomvc.test;
 
-import java.net.SocketAddress;
-import java.util.Map;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Properties;
 
-import javax.net.ssl.SSLContext;
+public class CustomProperties extends Properties {
 
-import com.janilla.http.HttpExchange;
-import com.janilla.http.HttpHandler;
-import com.janilla.http.HttpRequest;
-import com.janilla.http.HttpResponse;
-import com.janilla.http.HttpServer;
-import com.janilla.todomvc.TodoMvc;
+	private static final long serialVersionUID = -939700597400396880L;
 
-public class CustomHttpServer extends HttpServer {
-
-	public TodoMvc main;
-
-	public CustomHttpServer(SSLContext sslContext, SocketAddress endpoint, HttpHandler handler) {
-		super(sslContext, endpoint, handler);
-	}
-
-	@Override
-	protected HttpExchange createExchange(HttpRequest request, HttpResponse response) {
-		return Test.ONGOING.get() // && request.getPath().startsWith("/api/")
-				? main.factory().create(HttpExchange.class, Map.of("request", request, "response", response))
-				: super.createExchange(request, response);
+	public CustomProperties(Path file) {
+		try {
+			try (var x = TodoMvcTest.class.getResourceAsStream("configuration.properties")) {
+				load(x);
+			}
+			if (file != null)
+				try (var x = Files.newInputStream(file)) {
+					load(x);
+				}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 }

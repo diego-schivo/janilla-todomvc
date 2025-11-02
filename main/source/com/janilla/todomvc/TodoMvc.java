@@ -28,7 +28,8 @@ import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -59,19 +60,10 @@ public class TodoMvc {
 		try {
 			TodoMvc a;
 			{
-				var c = new Properties();
-				try (var x = TodoMvc.class.getResourceAsStream("configuration.properties")) {
-					c.load(x);
-				}
-				if (args.length > 0) {
-					var f = args[0];
-					if (f.startsWith("~"))
-						f = System.getProperty("user.home") + f.substring(1);
-					try (var x = Files.newInputStream(Path.of(f))) {
-						c.load(x);
-					}
-				}
-				a = new TodoMvc(c);
+				var f = new Factory(Java.getPackageClasses(TodoMvc.class.getPackageName()), TodoMvc.INSTANCE::get);
+				a = f.create(TodoMvc.class, Java.hashMap("factory", f, "configurationFile", args.length > 0 ? Path
+						.of(args[0].startsWith("~") ? System.getProperty("user.home") + args[0].substring(1) : args[0])
+						: null));
 			}
 
 			HttpServer s;
@@ -90,27 +82,23 @@ public class TodoMvc {
 		}
 	}
 
-	public Properties configuration;
+	protected final Properties configuration;
 
-	public Factory factory;
+	protected final Factory factory;
 
-	public HttpHandler handler;
+	protected final HttpHandler handler;
 
-	public TypeResolver typeResolver;
+	protected final TypeResolver typeResolver;
 
-	public List<Class<?>> types;
-
-	public TodoMvc(Properties configuration) {
+	public TodoMvc(Factory factory, Path configurationFile) {
+		this.factory = factory;
 		if (!INSTANCE.compareAndSet(null, this))
 			throw new IllegalStateException();
-		this.configuration = configuration;
-		types = Java.getPackageClasses(TodoMvc.class.getPackageName()).stream()
-				.filter(x -> !x.getPackageName().endsWith(".test")).toList();
-		factory = new Factory(types, INSTANCE::get);
+		configuration = factory.create(Properties.class, Collections.singletonMap("file", configurationFile));
 		typeResolver = factory.create(DollarTypeResolver.class);
 
 		{
-			var f = factory.create(ApplicationHandlerFactory.class, Map.of("methods", types.stream()
+			var f = factory.create(ApplicationHandlerFactory.class, Map.of("methods", types().stream()
 					.flatMap(x -> Arrays.stream(x.getMethods()).filter(y -> !Modifier.isStatic(y.getModifiers()))
 							.map(y -> new ClassAndMethod(x, y)))
 					.toList(), "files",
@@ -128,5 +116,21 @@ public class TodoMvc {
 	@Handle(method = "GET", path = "/")
 	public TodoMvc application() {
 		return this;
+	}
+
+	public Properties configuration() {
+		return configuration;
+	}
+
+	public Factory factory() {
+		return factory;
+	}
+
+	public HttpHandler handler() {
+		return handler;
+	}
+
+	public Collection<Class<?>> types() {
+		return factory.types();
 	}
 }

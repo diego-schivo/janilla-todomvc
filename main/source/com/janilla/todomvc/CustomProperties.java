@@ -21,32 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.janilla.todomvc.test;
+package com.janilla.todomvc;
 
-import java.net.SocketAddress;
-import java.util.Map;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Properties;
 
-import javax.net.ssl.SSLContext;
+public class CustomProperties extends Properties {
 
-import com.janilla.http.HttpExchange;
-import com.janilla.http.HttpHandler;
-import com.janilla.http.HttpRequest;
-import com.janilla.http.HttpResponse;
-import com.janilla.http.HttpServer;
-import com.janilla.todomvc.TodoMvc;
+	private static final long serialVersionUID = 3893565280906772120L;
 
-public class CustomHttpServer extends HttpServer {
-
-	public TodoMvc main;
-
-	public CustomHttpServer(SSLContext sslContext, SocketAddress endpoint, HttpHandler handler) {
-		super(sslContext, endpoint, handler);
-	}
-
-	@Override
-	protected HttpExchange createExchange(HttpRequest request, HttpResponse response) {
-		return Test.ONGOING.get() // && request.getPath().startsWith("/api/")
-				? main.factory().create(HttpExchange.class, Map.of("request", request, "response", response))
-				: super.createExchange(request, response);
+	public CustomProperties(Path file) {
+		try {
+			try (var x = TodoMvc.class.getResourceAsStream("configuration.properties")) {
+				load(x);
+			}
+			if (file != null)
+				try (var x = Files.newInputStream(file)) {
+					load(x);
+				}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 }

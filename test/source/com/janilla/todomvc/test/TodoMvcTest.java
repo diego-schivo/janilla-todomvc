@@ -24,9 +24,8 @@
 package com.janilla.todomvc.test;
 
 import java.net.InetSocketAddress;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -57,19 +56,11 @@ public class TodoMvcTest {
 		try {
 			TodoMvcTest a;
 			{
-				var c = new Properties();
-				try (var x = TodoMvcTest.class.getResourceAsStream("configuration.properties")) {
-					c.load(x);
-				}
-				if (args.length > 0) {
-					var f = args[0];
-					if (f.startsWith("~"))
-						f = System.getProperty("user.home") + f.substring(1);
-					try (var x = Files.newInputStream(Path.of(f))) {
-						c.load(x);
-					}
-				}
-				a = new TodoMvcTest(c);
+				var f = new Factory(Java.getPackageClasses(TodoMvcTest.class.getPackageName()),
+						TodoMvcTest.INSTANCE::get);
+				a = f.create(TodoMvcTest.class, Java.hashMap("factory", f, "configurationFile", args.length > 0 ? Path
+						.of(args[0].startsWith("~") ? System.getProperty("user.home") + args[0].substring(1) : args[0])
+						: null));
 			}
 
 			HttpServer s;
@@ -88,28 +79,27 @@ public class TodoMvcTest {
 		}
 	}
 
-	public Properties configuration;
+	protected final Properties configuration;
 
-	public Factory factory;
+	protected final Factory factory;
 
-	public TodoMvc main;
+	protected final TodoMvc main;
 
-	public HttpHandler handler;
+	protected final HttpHandler handler;
 
-	public TypeResolver typeResolver;
+	protected final TypeResolver typeResolver;
 
-	public List<Class<?>> types;
-
-	public TodoMvcTest(Properties configuration) {
+	public TodoMvcTest(Factory factory, Path configurationFile) {
+		this.factory = factory;
 		if (!INSTANCE.compareAndSet(null, this))
 			throw new IllegalStateException();
-		this.configuration = configuration;
-
-		types = Java.getPackageClasses(TodoMvcTest.class.getPackageName());
-		factory = new Factory(types, INSTANCE::get);
+		configuration = factory.create(Properties.class, Collections.singletonMap("file", configurationFile));
 		typeResolver = factory.create(DollarTypeResolver.class);
 
-		main = new TodoMvc(configuration);
+		main = factory.create(TodoMvc.class,
+				Java.hashMap("factory",
+						new Factory(Java.getPackageClasses(TodoMvc.class.getPackageName()), TodoMvc.INSTANCE::get),
+						"configurationFile", configurationFile));
 
 		{
 			var f = factory.create(ApplicationHandlerFactory.class);
@@ -117,7 +107,7 @@ public class TodoMvcTest {
 				var ex = (HttpExchange) x;
 //				IO.println(
 //						"TodoMvcTest, " + ex.request().getPath() + ", Test.ongoing=" + Test.ongoing.get());
-				var h2 = Test.ONGOING.get() && !ex.request().getPath().startsWith("/test/") ? main.handler
+				var h2 = Test.ONGOING.get() && !ex.request().getPath().startsWith("/test/") ? main.handler()
 						: (HttpHandler) y -> {
 							var h = f.createHandler(Objects.requireNonNullElse(y.exception(), y.request()));
 							if (h == null)
@@ -132,5 +122,17 @@ public class TodoMvcTest {
 	@Handle(method = "GET", path = "/")
 	public TodoMvcTest application() {
 		return this;
+	}
+
+	public Properties configuration() {
+		return configuration;
+	}
+
+	public Factory factory() {
+		return factory;
+	}
+
+	public HttpHandler handler() {
+		return handler;
 	}
 }
