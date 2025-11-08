@@ -36,11 +36,11 @@ import javax.net.ssl.SSLContext;
 import com.janilla.http.HttpExchange;
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpServer;
+import com.janilla.ioc.DependencyInjector;
 import com.janilla.java.Java;
 import com.janilla.json.DollarTypeResolver;
 import com.janilla.json.TypeResolver;
 import com.janilla.net.Net;
-import com.janilla.reflect.Factory;
 import com.janilla.todomvc.TodoMvc;
 import com.janilla.web.ApplicationHandlerFactory;
 import com.janilla.web.Handle;
@@ -56,7 +56,7 @@ public class TodoMvcTest {
 		try {
 			TodoMvcTest a;
 			{
-				var f = new Factory(Java.getPackageClasses(TodoMvcTest.class.getPackageName()),
+				var f = new DependencyInjector(Java.getPackageClasses(TodoMvcTest.class.getPackageName()),
 						TodoMvcTest.INSTANCE::get);
 				a = f.create(TodoMvcTest.class, Java.hashMap("factory", f, "configurationFile", args.length > 0 ? Path
 						.of(args[0].startsWith("~") ? System.getProperty("user.home") + args[0].substring(1) : args[0])
@@ -70,7 +70,7 @@ public class TodoMvcTest {
 					c = Net.getSSLContext(Map.entry("JKS", x), "passphrase".toCharArray());
 				}
 				var p = Integer.parseInt(a.configuration.getProperty("todomvc.server.port"));
-				s = a.factory.create(HttpServer.class,
+				s = a.injector.create(HttpServer.class,
 						Map.of("sslContext", c, "endpoint", new InetSocketAddress(p), "handler", a.handler));
 			}
 			s.serve();
@@ -81,7 +81,7 @@ public class TodoMvcTest {
 
 	protected final Properties configuration;
 
-	protected final Factory factory;
+	protected final DependencyInjector injector;
 
 	protected final TodoMvc main;
 
@@ -89,20 +89,20 @@ public class TodoMvcTest {
 
 	protected final TypeResolver typeResolver;
 
-	public TodoMvcTest(Factory factory, Path configurationFile) {
-		this.factory = factory;
+	public TodoMvcTest(DependencyInjector injector, Path configurationFile) {
+		this.injector = injector;
 		if (!INSTANCE.compareAndSet(null, this))
 			throw new IllegalStateException();
-		configuration = factory.create(Properties.class, Collections.singletonMap("file", configurationFile));
-		typeResolver = factory.create(DollarTypeResolver.class);
+		configuration = injector.create(Properties.class, Collections.singletonMap("file", configurationFile));
+		typeResolver = injector.create(DollarTypeResolver.class);
 
-		main = factory.create(TodoMvc.class,
+		main = injector.create(TodoMvc.class,
 				Java.hashMap("factory",
-						new Factory(Java.getPackageClasses(TodoMvc.class.getPackageName()), TodoMvc.INSTANCE::get),
+						new DependencyInjector(Java.getPackageClasses(TodoMvc.class.getPackageName()), TodoMvc.INSTANCE::get),
 						"configurationFile", configurationFile));
 
 		{
-			var f = factory.create(ApplicationHandlerFactory.class);
+			var f = injector.create(ApplicationHandlerFactory.class);
 			handler = x -> {
 				var ex = (HttpExchange) x;
 //				IO.println(
@@ -128,8 +128,8 @@ public class TodoMvcTest {
 		return configuration;
 	}
 
-	public Factory factory() {
-		return factory;
+	public DependencyInjector injector() {
+		return injector;
 	}
 
 	public HttpHandler handler() {
