@@ -58,7 +58,7 @@ public class TodoMvcTest {
 			{
 				var f = new DependencyInjector(Java.getPackageClasses(TodoMvcTest.class.getPackageName()),
 						TodoMvcTest.INSTANCE::get);
-				a = f.create(TodoMvcTest.class, Java.hashMap("factory", f, "configurationFile", args.length > 0 ? Path
+				a = f.create(TodoMvcTest.class, Java.hashMap("diFactory", f, "configurationFile", args.length > 0 ? Path
 						.of(args[0].startsWith("~") ? System.getProperty("user.home") + args[0].substring(1) : args[0])
 						: null));
 			}
@@ -70,7 +70,7 @@ public class TodoMvcTest {
 					c = Net.getSSLContext(Map.entry("JKS", x), "passphrase".toCharArray());
 				}
 				var p = Integer.parseInt(a.configuration.getProperty("todomvc.server.port"));
-				s = a.injector.create(HttpServer.class,
+				s = a.diFactory.create(HttpServer.class,
 						Map.of("sslContext", c, "endpoint", new InetSocketAddress(p), "handler", a.handler));
 			}
 			s.serve();
@@ -81,7 +81,7 @@ public class TodoMvcTest {
 
 	protected final Properties configuration;
 
-	protected final DependencyInjector injector;
+	protected final DependencyInjector diFactory;
 
 	protected final TodoMvc main;
 
@@ -89,20 +89,20 @@ public class TodoMvcTest {
 
 	protected final TypeResolver typeResolver;
 
-	public TodoMvcTest(DependencyInjector injector, Path configurationFile) {
-		this.injector = injector;
+	public TodoMvcTest(DependencyInjector diFactory, Path configurationFile) {
+		this.diFactory = diFactory;
 		if (!INSTANCE.compareAndSet(null, this))
 			throw new IllegalStateException();
-		configuration = injector.create(Properties.class, Collections.singletonMap("file", configurationFile));
-		typeResolver = injector.create(DollarTypeResolver.class);
+		configuration = diFactory.create(Properties.class, Collections.singletonMap("file", configurationFile));
+		typeResolver = diFactory.create(DollarTypeResolver.class);
 
-		main = injector.create(TodoMvc.class,
-				Java.hashMap("factory",
+		main = diFactory.create(TodoMvc.class,
+				Java.hashMap("diFactory",
 						new DependencyInjector(Java.getPackageClasses(TodoMvc.class.getPackageName()), TodoMvc.INSTANCE::get),
 						"configurationFile", configurationFile));
 
 		{
-			var f = injector.create(ApplicationHandlerFactory.class);
+			var f = diFactory.create(ApplicationHandlerFactory.class);
 			handler = x -> {
 				var ex = (HttpExchange) x;
 //				IO.println(
@@ -128,8 +128,8 @@ public class TodoMvcTest {
 		return configuration;
 	}
 
-	public DependencyInjector injector() {
-		return injector;
+	public DependencyInjector diFactory() {
+		return diFactory;
 	}
 
 	public HttpHandler handler() {
