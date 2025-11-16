@@ -36,7 +36,7 @@ import javax.net.ssl.SSLContext;
 import com.janilla.http.HttpExchange;
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpServer;
-import com.janilla.ioc.DependencyInjector;
+import com.janilla.ioc.DiFactory;
 import com.janilla.java.Java;
 import com.janilla.json.DollarTypeResolver;
 import com.janilla.json.TypeResolver;
@@ -56,7 +56,7 @@ public class TodoMvcTest {
 		try {
 			TodoMvcTest a;
 			{
-				var f = new DependencyInjector(Java.getPackageClasses(TodoMvcTest.class.getPackageName()),
+				var f = new DiFactory(Java.getPackageClasses(TodoMvcTest.class.getPackageName()),
 						TodoMvcTest.INSTANCE::get);
 				a = f.create(TodoMvcTest.class, Java.hashMap("diFactory", f, "configurationFile", args.length > 0 ? Path
 						.of(args[0].startsWith("~") ? System.getProperty("user.home") + args[0].substring(1) : args[0])
@@ -81,7 +81,7 @@ public class TodoMvcTest {
 
 	protected final Properties configuration;
 
-	protected final DependencyInjector diFactory;
+	protected final DiFactory diFactory;
 
 	protected final TodoMvc main;
 
@@ -89,7 +89,7 @@ public class TodoMvcTest {
 
 	protected final TypeResolver typeResolver;
 
-	public TodoMvcTest(DependencyInjector diFactory, Path configurationFile) {
+	public TodoMvcTest(DiFactory diFactory, Path configurationFile) {
 		this.diFactory = diFactory;
 		if (!INSTANCE.compareAndSet(null, this))
 			throw new IllegalStateException();
@@ -98,7 +98,7 @@ public class TodoMvcTest {
 
 		main = diFactory.create(TodoMvc.class,
 				Java.hashMap("diFactory",
-						new DependencyInjector(Java.getPackageClasses(TodoMvc.class.getPackageName()), TodoMvc.INSTANCE::get),
+						new DiFactory(Java.getPackageClasses(TodoMvc.class.getPackageName()), TodoMvc.INSTANCE::get),
 						"configurationFile", configurationFile));
 
 		{
@@ -128,7 +128,7 @@ public class TodoMvcTest {
 		return configuration;
 	}
 
-	public DependencyInjector diFactory() {
+	public DiFactory diFactory() {
 		return diFactory;
 	}
 
