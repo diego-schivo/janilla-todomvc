@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024-2025 Diego Schivo
+ * Copyright (c) 2024-2026 Diego Schivo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,7 @@ public class TodoMvcTest {
 		try {
 			TodoMvcTest a;
 			{
-				var f = new DiFactory(Java.getPackageClasses(TodoMvcTest.class.getPackageName()),
-						TodoMvcTest.INSTANCE::get);
+				var f = new DiFactory(Java.getPackageClasses(TodoMvcTest.class.getPackageName()), INSTANCE::get);
 				a = f.create(TodoMvcTest.class, Java.hashMap("diFactory", f, "configurationFile", args.length > 0 ? Path
 						.of(args[0].startsWith("~") ? System.getProperty("user.home") + args[0].substring(1) : args[0])
 						: null));
