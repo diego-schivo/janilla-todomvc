@@ -27,5 +27,5 @@ module com.janilla.todomvc {
 
 	opens com.janilla.todomvc;
 
-	requires transitive com.janilla;
+	requires transitive com.janilla.frontend;
 }
