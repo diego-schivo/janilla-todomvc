@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
@@ -43,7 +42,7 @@ import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpServer;
 import com.janilla.ioc.DiFactory;
 import com.janilla.java.Java;
-import com.janilla.net.Net;
+import com.janilla.net.SecureServer;
 import com.janilla.web.ApplicationHandlerFactory;
 import com.janilla.web.Handle;
 import com.janilla.web.Invocable;
@@ -54,14 +53,12 @@ import com.janilla.web.RenderableFactory;
 @Render(template = "index.html")
 public class TodoMvc {
 
-	public static final AtomicReference<TodoMvc> INSTANCE = new AtomicReference<>();
-
 	public static void main(String[] args) {
 		try {
 			TodoMvc a;
 			{
-				var f = new DiFactory(Stream.of(TodoMvc.class.getPackageName(), "com.janilla.web")
-						.flatMap(x -> Java.getPackageClasses(x).stream()).toList(), INSTANCE::get);
+				var f = new DiFactory(Stream.of("com.janilla.web", TodoMvc.class.getPackageName())
+						.flatMap(x -> Java.getPackageClasses(x).stream()).toList());
 				a = f.create(TodoMvc.class, Java.hashMap("diFactory", f, "configurationFile", args.length > 0 ? Path
 						.of(args[0].startsWith("~") ? System.getProperty("user.home") + args[0].substring(1) : args[0])
 						: null));
@@ -70,8 +67,8 @@ public class TodoMvc {
 			HttpServer s;
 			{
 				SSLContext c;
-				try (var x = Net.class.getResourceAsStream("localhost")) {
-					c = Net.getSSLContext(Map.entry("JKS", x), "passphrase".toCharArray());
+				try (var x = SecureServer.class.getResourceAsStream("localhost")) {
+					c = Java.sslContext(x, "passphrase".toCharArray());
 				}
 				var p = Integer.parseInt(a.configuration.getProperty("todomvc.server.port"));
 				s = a.diFactory.create(HttpServer.class,
@@ -97,8 +94,7 @@ public class TodoMvc {
 
 	public TodoMvc(DiFactory diFactory, Path configurationFile) {
 		this.diFactory = diFactory;
-		if (!INSTANCE.compareAndSet(null, this))
-			throw new IllegalStateException();
+		diFactory.context(this);
 		configuration = diFactory.create(Properties.class, Collections.singletonMap("file", configurationFile));
 
 		invocables = types().stream()
