@@ -24,7 +24,7 @@
 import WebComponent from "./web-component.js";
 import { nanoid } from "./static/scripts/nanoid.js";
 
-class TodoTopbar extends WebComponent {
+export default class TodoTopbar extends WebComponent {
 
 	static get observedAttributes() {
 		return ["data-filter", "data-total-items", "data-active-items", "data-completed-items"];
@@ -32,10 +32,6 @@ class TodoTopbar extends WebComponent {
 
 	static get templateNames() {
 		return ["todo-topbar"];
-	}
-
-	constructor() {
-		super();
 	}
 
 	connectedCallback() {
@@ -96,5 +92,3 @@ class TodoTopbar extends WebComponent {
 		}
 	}
 }
-
-export default TodoTopbar;

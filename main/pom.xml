@@ -15,60 +15,29 @@
 		<artifactId>janilla-todomvc</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<build>
-		<sourceDirectory>./source</sourceDirectory>
-		<resources>
-			<resource>
-				<directory>source</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
-			</resource>
-		</resources>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<executable>java</executable>
-					<arguments>
-						<argument>-p</argument>
-						<modulepath/>
-						<argument>-m</argument>
-						<argument>com.janilla.todomvc/com.janilla.todomvc.TodoMvc</argument>
-					</arguments>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	<name>Janilla TodoMVC</name>
-	<description>A TodoMVC written with Janilla</description>
-	<url>https://github.com/diego-schivo/janilla-todomvc</url>
-	<licenses>
-		<license>
-			<name>MIT</name>
-			<url>https://opensource.org/licenses/MIT</url>
-		</license>
-	</licenses>
-	<developers>
-		<developer>
-			<name>Diego Schivo</name>
-			<email>diego.schivo@janilla.com</email>
-			<organization>Janilla</organization>
-			<organizationUrl>https://janilla.com</organizationUrl>
-		</developer>
-	</developers>
-	<scm>
-		<connection>scm:git:git://github.com/diego-schivo/janilla-todomvc.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/diego-schivo/janilla-todomvc.git</developerConnection>
-		<url>https://github.com/diego-schivo/janilla-todomvc</url>
-		<tag>HEAD</tag>
-	</scm>
+	<properties>
+		<exec.mainClass>com.janilla.todomvc.TodoMvc</exec.mainClass>
+	</properties>
+	<profiles>
+		<profile>
+			<id>execute</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<configuration>
+							<executable>java</executable>
+							<arguments>
+								<argument>-p</argument>
+								<modulepath/>
+								<argument>-m</argument>
+								<argument>com.janilla.todomvc/com.janilla.todomvc.TodoMvc</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

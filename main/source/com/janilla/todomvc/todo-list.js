@@ -23,7 +23,7 @@
  */
 import WebComponent from "./web-component.js";
 
-class TodoList extends WebComponent {
+export default class TodoList extends WebComponent {
 
 	static get observedAttributes() {
 		return ["data-filter", "data-total-items"];
@@ -31,10 +31,6 @@ class TodoList extends WebComponent {
 
 	static get templateNames() {
 		return ["todo-list"];
-	}
-
-	constructor() {
-		super();
 	}
 
 	async updateDisplay() {
@@ -49,5 +45,3 @@ class TodoList extends WebComponent {
 		}));
 	}
 }
-
-export default TodoList;

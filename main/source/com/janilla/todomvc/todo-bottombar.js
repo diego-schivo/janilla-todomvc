@@ -23,7 +23,7 @@
  */
 import WebComponent from "./web-component.js";
 
-class TodoBottombar extends WebComponent {
+export default class TodoBottombar extends WebComponent {
 
 	static get observedAttributes() {
 		return ["data-active-items", "data-filter", "data-total-items"];
@@ -31,10 +31,6 @@ class TodoBottombar extends WebComponent {
 
 	static get templateNames() {
 		return ["todo-bottombar"];
-	}
-
-	constructor() {
-		super();
 	}
 
 	connectedCallback() {
@@ -68,5 +64,3 @@ class TodoBottombar extends WebComponent {
 		}));
 	}
 }
-
-export default TodoBottombar;

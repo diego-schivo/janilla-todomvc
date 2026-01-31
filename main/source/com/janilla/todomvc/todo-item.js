@@ -23,14 +23,10 @@
  */
 import WebComponent from "./web-component.js";
 
-class TodoItem extends WebComponent {
+export default class TodoItem extends WebComponent {
 
 	static get templateNames() {
 		return ["todo-item"];
-	}
-
-	constructor() {
-		super();
 	}
 
 	connectedCallback() {
@@ -122,5 +118,3 @@ class TodoItem extends WebComponent {
 		}
 	}
 }
-
-export default TodoItem;
