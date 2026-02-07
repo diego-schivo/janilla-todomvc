@@ -29,9 +29,9 @@
 						<configuration>
 							<executable>java</executable>
 							<arguments>
-								<argument>-p</argument>
+								<argument>--module-path</argument>
 								<modulepath/>
-								<argument>-m</argument>
+								<argument>--module</argument>
 								<argument>com.janilla.todomvc.test/com.janilla.todomvc.test.TodoMvcTest</argument>
 							</arguments>
 						</configuration>

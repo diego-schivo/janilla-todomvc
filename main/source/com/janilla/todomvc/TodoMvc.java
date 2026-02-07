@@ -31,10 +31,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
@@ -46,6 +46,7 @@ import com.janilla.java.Java;
 import com.janilla.web.ApplicationHandlerFactory;
 import com.janilla.web.Handle;
 import com.janilla.web.Invocable;
+import com.janilla.web.InvocationResolver;
 import com.janilla.web.NotFoundException;
 import com.janilla.web.Render;
 import com.janilla.web.RenderableFactory;
@@ -102,7 +103,7 @@ public class TodoMvc {
 
 	protected final HttpHandler handler;
 
-	protected final List<Invocable> invocables;
+	protected final InvocationResolver invocationResolver;
 
 	protected final RenderableFactory renderableFactory;
 
@@ -113,11 +114,18 @@ public class TodoMvc {
 		diFactory.context(this);
 		configuration = diFactory.create(Properties.class, Collections.singletonMap("file", configurationFile));
 
-		invocables = diFactory.types().stream()
-				.flatMap(x -> Arrays.stream(x.getMethods())
-						.filter(y -> !Modifier.isStatic(y.getModifiers()) && !y.isBridge())
-						.map(y -> new Invocable(x, y)))
-				.toList();
+		invocationResolver = diFactory.create(InvocationResolver.class,
+				Map.of("invocables",
+						diFactory.types().stream()
+								.flatMap(x -> Arrays.stream(x.getMethods())
+										.filter(y -> !Modifier.isStatic(y.getModifiers()) && !y.isBridge())
+										.map(y -> new Invocable(x, y)))
+								.toList(),
+						"instanceResolver", (Function<Class<?>, Object>) x -> {
+							var y = diFactory.context();
+//							IO.println("x=" + x + ", y=" + y);
+							return x.isAssignableFrom(y.getClass()) ? diFactory.context() : diFactory.create(x);
+						}));
 		resourceMap = diFactory.create(ResourceMap.class,
 				Map.of("paths", Map.of("", Stream.of("com.janilla.frontend", TodoMvc.class.getPackageName())
 						.flatMap(x -> Java.getPackagePaths(x, false).filter(Files::isRegularFile)).toList())));
@@ -150,8 +158,8 @@ public class TodoMvc {
 		return handler;
 	}
 
-	public List<Invocable> invocables() {
-		return invocables;
+	public InvocationResolver invocationResolver() {
+		return invocationResolver;
 	}
 
 	public RenderableFactory renderableFactory() {
