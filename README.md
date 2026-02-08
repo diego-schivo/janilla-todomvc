@@ -4,7 +4,14 @@
 
 This application uses Janilla to implement a todo application.
 
-[Janilla](https://janilla.com/) provides a full web solution stack packed into a single lightweight library.
+[Janilla](https://janilla.com/) leverages standard technologies and principles to let you develop overengineering-free equivalent of web applications relying on heavy frameworks.
+
+## Live preview
+
+```
+browser:
+1. https://todomvc.janilla.com/
+```
 
 ## Implementation Details
 
@@ -15,8 +22,8 @@ This implementation uses an in-memory data object that implements a simple array
 The only requirement is an installation of Java and Maven, to be able to compile the project and serve a local server.
 
 ```
-* Java (version: 24.0.1)
-* Maven (version: 3.9.9)
+* Java (version: 25.0.1)
+* Maven (version: 3.9.12)
 ```
 
 ## Local preview
