@@ -43,6 +43,20 @@ export default class TodoItem extends WebComponent {
 		this.removeEventListener("keyup", this.handleKeyUp);
 	}
 
+	async updateDisplay() {
+		this.appendChild(this.interpolateDom({
+			$template: "",
+			...this.dataset,
+			checked: this.dataset.completed === "true",
+			editing: this.dataset.edit ? "editing" : null
+		}));
+		if (this.dataset.edit) {
+			const el = this.querySelector(".edit-todo-input");
+			el.focus();
+			el.addEventListener("blur", this.handleBlur);
+		}
+	}
+
 	handleBlur = event => {
 		event.currentTarget.removeEventListener("blur", this.handleBlur);
 		delete this.dataset.edit;
@@ -101,20 +115,6 @@ export default class TodoItem extends WebComponent {
 			case "Esc":
 				this.querySelector(".edit-todo-input").blur();
 				break;
-		}
-	}
-
-	async updateDisplay() {
-		this.appendChild(this.interpolateDom({
-			$template: "",
-			...this.dataset,
-			checked: this.dataset.completed === "true",
-			editing: this.dataset.edit ? "editing" : null
-		}));
-		if (this.dataset.edit) {
-			const el = this.querySelector(".edit-todo-input");
-			el.focus();
-			el.addEventListener("blur", this.handleBlur);
 		}
 	}
 }

@@ -43,11 +43,6 @@ export default class TodoBottombar extends WebComponent {
 		this.removeEventListener("click", this.handleClick);
 	}
 
-	handleClick = event => {
-		if (event.target.matches(".clear-completed-button"))
-			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
-	}
-
 	async updateDisplay() {
 		const a = parseInt(this.dataset.activeItems);
 		this.appendChild(this.interpolateDom({
@@ -62,5 +57,10 @@ export default class TodoBottombar extends WebComponent {
 				text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
 			}))
 		}));
+	}
+
+	handleClick = event => {
+		if (event.target.matches(".clear-completed-button"))
+			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
 	}
 }

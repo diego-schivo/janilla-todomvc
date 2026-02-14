@@ -53,6 +53,19 @@ export default class TodoApp extends WebComponent {
 		this.removeEventListener("update-item", this.handleUpdateItem);
 	}
 
+	async updateDisplay() {
+		const t = this.data.length;
+		const a = this.data.reduce((x, y) => y.completed ? x : x + 1, 0);
+		const c = t - a;
+		this.appendChild(this.interpolateDom({
+			$template: "",
+			totalItems: t,
+			activeItems: a,
+			completedItems: c,
+			filter: location.hash.split("/")[1] || "all",
+		}));
+	}
+
 	handleAddItem = event => {
 		const { detail: item } = event;
 		this.data.push(item);
@@ -95,18 +108,5 @@ export default class TodoApp extends WebComponent {
 		const { detail: item } = event;
 		this.data.find(x => x.id === item.id).title = item.title;
 		this.querySelector("todo-list").requestDisplay();
-	}
-
-	async updateDisplay() {
-		const t = this.data.length;
-		const a = this.data.reduce((x, y) => y.completed ? x : x + 1, 0);
-		const c = t - a;
-		this.appendChild(this.interpolateDom({
-			$template: "",
-			totalItems: t,
-			activeItems: a,
-			completedItems: c,
-			filter: location.hash.split("/")[1] || "all",
-		}));
 	}
 }

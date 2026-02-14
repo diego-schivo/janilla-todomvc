@@ -46,28 +46,6 @@ export default class TodoTopbar extends WebComponent {
 		this.removeEventListener("keyup", this.handleKeyUp);
 	}
 
-	handleChange = event => {
-		if (event.target.matches(".toggle-all-input"))
-			this.dispatchEvent(new CustomEvent("toggle-all", {
-				bubbles: true,
-				detail: { completed: event.target.checked }
-			}));
-	}
-
-	handleKeyUp = event => {
-		if (event.key === "Enter" && event.target.value) {
-			this.dispatchEvent(new CustomEvent("add-item", {
-				bubbles: true,
-				detail: {
-					id: nanoid(),
-					title: event.target.value,
-					completed: false,
-				}
-			}));
-			event.target.value = "";
-		}
-	}
-
 	async updateDisplay() {
 		const totalItems = parseInt(this.dataset.totalItems);
 		this.appendChild(this.interpolateDom({
@@ -89,6 +67,28 @@ export default class TodoTopbar extends WebComponent {
 					el.checked = !parseInt(this.dataset.activeItems);
 					el.disabled = false;
 			}
+		}
+	}
+
+	handleChange = event => {
+		if (event.target.matches(".toggle-all-input"))
+			this.dispatchEvent(new CustomEvent("toggle-all", {
+				bubbles: true,
+				detail: { completed: event.target.checked }
+			}));
+	}
+
+	handleKeyUp = event => {
+		if (event.key === "Enter" && event.target.value) {
+			this.dispatchEvent(new CustomEvent("add-item", {
+				bubbles: true,
+				detail: {
+					id: nanoid(),
+					title: event.target.value,
+					completed: false,
+				}
+			}));
+			event.target.value = "";
 		}
 	}
 }
