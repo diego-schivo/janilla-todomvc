@@ -21,11 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-module com.janilla.todomvc {
+package com.janilla.todomvc.frontend;
 
-	exports com.janilla.todomvc;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Properties;
 
-	opens com.janilla.todomvc;
+public class CustomProperties extends Properties {
 
-	requires transitive com.janilla.frontend;
+	private static final long serialVersionUID = 3893565280906772120L;
+
+	public CustomProperties(Path file) {
+		try {
+			try (var x = TodoMvcFrontend.class.getResourceAsStream("configuration.properties")) {
+				load(x);
+			}
+			if (file != null)
+				try (var x = Files.newInputStream(file)) {
+					load(x);
+				}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
 }
