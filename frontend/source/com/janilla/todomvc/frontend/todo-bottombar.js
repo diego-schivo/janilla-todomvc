@@ -25,42 +25,59 @@ import WebComponent from "./web-component.js";
 
 export default class TodoBottombar extends WebComponent {
 
-	static get observedAttributes() {
-		return ["data-active-items", "data-filter", "data-total-items"];
-	}
+    static get templateNames() {
+        return ["todo-bottombar"];
+    }
 
-	static get templateNames() {
-		return ["todo-bottombar"];
-	}
+    connectedCallback() {
+        super.connectedCallback();
 
-	connectedCallback() {
-		super.connectedCallback();
-		this.addEventListener("click", this.handleClick);
-	}
+        this.addEventListener("click", this.handleClick);
 
-	disconnectedCallback() {
-		super.disconnectedCallback();
-		this.removeEventListener("click", this.handleClick);
-	}
+        const s = this.customState;
+        s.app = this.closest("todo-app");
+        s.app.addEventListener("datachanged", this.handleDataChanged);
+        s.app.addEventListener("filterchanged", this.handleFilterChanged);
+    }
 
-	async updateDisplay() {
-		const a = parseInt(this.dataset.activeItems);
-		this.appendChild(this.interpolateDom({
-			$template: "",
-			display: parseInt(this.dataset.totalItems) ? "block" : "none",
-			todoStatusText: `${a} ${a === 1 ? "item" : "items"} left!`,
-			filterItems: ["all", "active", "completed"].map(x => ({
-				$template: "filter-item",
-				id: `filter-link-${x}`,
-				selected: x === this.dataset.filter ? "selected" : null,
-				href: `#/${x !== "all" ? x : ""}`,
-				text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
-			}))
-		}));
-	}
+    disconnectedCallback() {
+        this.removeEventListener("click", this.handleClick);
 
-	handleClick = event => {
-		if (event.target.matches(".clear-completed-button"))
-			this.dispatchEvent(new CustomEvent("clear-completed", { bubbles: true }));
-	}
+        const s = this.customState;
+        s.app.removeEventListener("datachanged", this.handleDataChanged);
+        s.app.removeEventListener("filterchanged", this.handleFilterChanged);
+
+        super.disconnectedCallback();
+    }
+
+    async updateDisplay() {
+        const as = this.customState.app.customState;
+        this.appendChild(this.interpolateDom({
+            $template: "",
+            content: as.totalItems !== 0 ? {
+                $template: "content",
+                todoStatusText: `${as.activeItems} ${as.activeItems === 1 ? "item" : "items"} left!`,
+                filterItems: ["all", "active", "completed"].map(x => ({
+                    $template: "filter-item",
+                    id: `filter-link-${x}`,
+                    selected: x === as.filter ? "selected" : null,
+                    href: `#/${x !== "all" ? x : ""}`,
+                    text: `${x.charAt(0).toUpperCase()}${x.substring(1)}`
+                }))
+            } : null
+        }));
+    }
+
+    handleClick = event => {
+        if (event.target.matches(".clear-completed-button"))
+            this.closest("todo-app").clearCompleted();
+    }
+
+    handleDataChanged = () => {
+        this.requestDisplay();
+    }
+
+    handleFilterChanged = () => {
+        this.requestDisplay();
+    }
 }

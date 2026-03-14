@@ -42,6 +42,7 @@ import javax.net.ssl.SSLContext;
 import com.janilla.http.HttpClient;
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpServer;
+import com.janilla.ioc.DefaultDiFactory;
 import com.janilla.ioc.DiFactory;
 import com.janilla.java.Java;
 import com.janilla.web.ApplicationHandlerFactory;
@@ -53,14 +54,14 @@ import com.janilla.web.Render;
 import com.janilla.web.RenderableFactory;
 import com.janilla.web.ResourceMap;
 
-@Render(template = "index.html")
+@Render(template = "index", resource = "/index.html")
 public class TodoMvcFrontend {
 
 	public static final String[] DI_PACKAGES = { "com.janilla.web", "com.janilla.todomvc.frontend" };
 
 	public static void main(String[] args) {
 		IO.println(ProcessHandle.current().pid());
-		var f = new DiFactory(
+		var f = new DefaultDiFactory(
 				Arrays.stream(DI_PACKAGES).flatMap(x -> Java.getPackageClasses(x, false).stream()).toList());
 		serve(f, args.length > 0 ? args[0] : null);
 	}
@@ -68,7 +69,7 @@ public class TodoMvcFrontend {
 	protected static void serve(DiFactory diFactory, String configurationPath) {
 		TodoMvcFrontend a;
 		{
-			a = diFactory.create(diFactory.actualType(TodoMvcFrontend.class),
+			a = diFactory.newInstance(diFactory.classFor(TodoMvcFrontend.class),
 					Java.hashMap("diFactory", diFactory, "configurationFile",
 							configurationPath != null ? Path.of(configurationPath.startsWith("~")
 									? System.getProperty("user.home") + configurationPath.substring(1)
@@ -97,7 +98,7 @@ public class TodoMvcFrontend {
 		HttpServer s;
 		{
 			var p = Integer.parseInt(a.configuration.getProperty("todomvc.server.port"));
-			s = a.diFactory.create(a.diFactory.actualType(HttpServer.class),
+			s = a.diFactory.newInstance(a.diFactory.classFor(HttpServer.class),
 					Map.of("sslContext", c, "endpoint", new InetSocketAddress(p), "handler", a.handler));
 		}
 		s.serve();
@@ -118,10 +119,10 @@ public class TodoMvcFrontend {
 	public TodoMvcFrontend(DiFactory diFactory, Path configurationFile) {
 		this.diFactory = diFactory;
 		diFactory.context(this);
-		configuration = diFactory.create(diFactory.actualType(Properties.class),
+		configuration = diFactory.newInstance(diFactory.classFor(Properties.class),
 				Collections.singletonMap("file", configurationFile));
 
-		invocationResolver = diFactory.create(diFactory.actualType(InvocationResolver.class),
+		invocationResolver = diFactory.newInstance(diFactory.classFor(InvocationResolver.class),
 				Map.of("invocables",
 						diFactory.types().stream()
 								.flatMap(x -> Arrays.stream(x.getMethods())
@@ -132,14 +133,14 @@ public class TodoMvcFrontend {
 							var y = diFactory.context();
 //							IO.println("x=" + x + ", y=" + y);
 							return x.isAssignableFrom(y.getClass()) ? diFactory.context()
-									: diFactory.create(diFactory.actualType(x));
+									: diFactory.newInstance(diFactory.classFor(x));
 						}));
-		resourceMap = diFactory.create(diFactory.actualType(ResourceMap.class),
+		resourceMap = diFactory.newInstance(diFactory.classFor(ResourceMap.class),
 				Map.of("paths", Map.of("", Stream.of("com.janilla.frontend", TodoMvcFrontend.class.getPackageName())
 						.flatMap(x -> Java.getPackagePaths(x, false).filter(Files::isRegularFile)).toList())));
-		renderableFactory = diFactory.create(diFactory.actualType(RenderableFactory.class));
+		renderableFactory = diFactory.newInstance(diFactory.classFor(RenderableFactory.class));
 		{
-			var f = diFactory.create(diFactory.actualType(ApplicationHandlerFactory.class));
+			var f = diFactory.newInstance(diFactory.classFor(ApplicationHandlerFactory.class));
 			handler = x -> {
 				var h = f.createHandler(Objects.requireNonNullElse(x.exception(), x.request()));
 				if (h == null)

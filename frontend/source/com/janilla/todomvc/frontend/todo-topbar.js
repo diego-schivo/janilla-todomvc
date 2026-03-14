@@ -26,69 +26,85 @@ import { nanoid } from "./static/scripts/nanoid.js";
 
 export default class TodoTopbar extends WebComponent {
 
-	static get observedAttributes() {
-		return ["data-filter", "data-total-items", "data-active-items", "data-completed-items"];
-	}
+    static get templateNames() {
+        return ["todo-topbar"];
+    }
 
-	static get templateNames() {
-		return ["todo-topbar"];
-	}
+    connectedCallback() {
+        super.connectedCallback();
 
-	connectedCallback() {
-		super.connectedCallback();
-		this.addEventListener("change", this.handleChange);
-		this.addEventListener("keyup", this.handleKeyUp);
-	}
+        this.addEventListener("change", this.handleChange);
+        this.addEventListener("keyup", this.handleKeyUp);
 
-	disconnectedCallback() {
-		super.disconnectedCallback();
-		this.removeEventListener("change", this.handleChange);
-		this.removeEventListener("keyup", this.handleKeyUp);
-	}
+        const s = this.customState;
+        s.app = this.closest("todo-app");
+        s.app.addEventListener("datachanged", this.handleDataChanged);
+        s.app.addEventListener("filterchanged", this.handleFilterChanged);
+    }
 
-	async updateDisplay() {
-		const totalItems = parseInt(this.dataset.totalItems);
-		this.appendChild(this.interpolateDom({
-			$template: "",
-			display: totalItems ? "block" : "none"
-		}));
-		if (totalItems) {
-			const el = this.querySelector(".toggle-all-input");
-			switch (this.dataset.filter) {
-				case "active":
-					el.checked = false;
-					el.disabled = !parseInt(this.dataset.activeItems);
-					break;
-				case "completed":
-					el.checked = parseInt(this.dataset.completedItems);
-					el.disabled = !parseInt(this.dataset.completedItems);
-					break;
-				default:
-					el.checked = !parseInt(this.dataset.activeItems);
-					el.disabled = false;
-			}
-		}
-	}
+    disconnectedCallback() {
+        this.removeEventListener("change", this.handleChange);
+        this.removeEventListener("keyup", this.handleKeyUp);
 
-	handleChange = event => {
-		if (event.target.matches(".toggle-all-input"))
-			this.dispatchEvent(new CustomEvent("toggle-all", {
-				bubbles: true,
-				detail: { completed: event.target.checked }
-			}));
-	}
+        const s = this.customState;
+        s.app.removeEventListener("datachanged", this.handleDataChanged);
+        s.app.removeEventListener("filterchanged", this.handleFilterChanged);
 
-	handleKeyUp = event => {
-		if (event.key === "Enter" && event.target.value) {
-			this.dispatchEvent(new CustomEvent("add-item", {
-				bubbles: true,
-				detail: {
-					id: nanoid(),
-					title: event.target.value,
-					completed: false,
-				}
-			}));
-			event.target.value = "";
-		}
-	}
+        super.disconnectedCallback();
+    }
+
+    async updateDisplay() {
+        const as = this.customState.app.customState;
+        this.appendChild(this.interpolateDom({
+            $template: "",
+            newTodo: {
+                $template: "new-todo",
+                value: ""
+            },
+            toggleAll: as.totalItems !== 0 ? {
+                $template: "toggle-all",
+                ...(() => {
+                    switch (as.filter) {
+                        case "active":
+                            return {
+                                checked: false,
+                                disabled: as.activeItems === 0
+                            };
+                        case "completed":
+                            return {
+                                checked: as.completedItems !== 0,
+                                disabled: as.completedItems === 0
+                            };
+                        default:
+                            return {
+                                checked: as.activeItems == 0,
+                                disabled: false
+                            };
+                    }
+                })()
+            } : null
+        }));
+    }
+
+    handleChange = event => {
+        if (event.target.matches(".toggle-all-input"))
+            this.customState.app.toggleAll({ completed: event.target.checked });
+    }
+
+    handleDataChanged = () => {
+        this.requestDisplay();
+    }
+
+    handleFilterChanged = () => {
+        this.requestDisplay();
+    }
+
+    handleKeyUp = event => {
+        if (event.key === "Enter" && event.target.value)
+            this.customState.app.addItem({
+                id: nanoid(),
+                title: event.target.value,
+                completed: false
+            });
+    }
 }

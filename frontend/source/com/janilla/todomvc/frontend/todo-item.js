@@ -25,96 +25,97 @@ import WebComponent from "./web-component.js";
 
 export default class TodoItem extends WebComponent {
 
-	static get templateNames() {
-		return ["todo-item"];
-	}
+    static get templateNames() {
+        return ["todo-item"];
+    }
 
-	connectedCallback() {
-		super.connectedCallback();
-		this.addEventListener("change", this.handleChange);
-		this.addEventListener("click", this.handleClick);
-		this.addEventListener("keyup", this.handleKeyUp);
-	}
+    static get observedAttributes() {
+        return ["data-completed", "data-edit", "data-id", "data-title"];
+    }
 
-	disconnectedCallback() {
-		super.disconnectedCallback();
-		this.removeEventListener("change", this.handleChange);
-		this.removeEventListener("click", this.handleClick);
-		this.removeEventListener("keyup", this.handleKeyUp);
-	}
+    connectedCallback() {
+        super.connectedCallback();
 
-	async updateDisplay() {
-		this.appendChild(this.interpolateDom({
-			$template: "",
-			...this.dataset,
-			checked: this.dataset.completed === "true",
-			editing: this.dataset.edit ? "editing" : null
-		}));
-		if (this.dataset.edit) {
-			const el = this.querySelector(".edit-todo-input");
-			el.focus();
-			el.addEventListener("blur", this.handleBlur);
-		}
-	}
+        this.addEventListener("change", this.handleChange);
+        this.addEventListener("click", this.handleClick);
+        this.addEventListener("keyup", this.handleKeyUp);
+    }
 
-	handleBlur = event => {
-		event.currentTarget.removeEventListener("blur", this.handleBlur);
-		delete this.dataset.edit;
-		this.requestDisplay();
-	}
+    disconnectedCallback() {
+        this.removeEventListener("change", this.handleChange);
+        this.removeEventListener("click", this.handleClick);
+        this.removeEventListener("keyup", this.handleKeyUp);
 
-	handleChange = event => {
-		if (event.target.matches(".toggle-todo-input"))
-			this.dispatchEvent(new CustomEvent("toggle-item", {
-				bubbles: true,
-				detail: {
-					id: this.dataset.id,
-					completed: event.target.checked,
-				}
-			}));
-	}
+        super.disconnectedCallback();
+    }
 
-	handleClick = event => {
-		if (event.target.matches(".todo-item-text")) {
-			if (!this.dataset.edit) {
-				const t = new Date().getTime();
-				const x = this.textClickTime ? t - this.textClickTime : 0;
-				this.textClickTime = t;
-				if (x > 0 && x < 500) {
-					this.dataset.edit = true;
-					this.requestDisplay();
-				}
-			}
-		} else if (event.target.matches(".remove-todo-button"))
-			this.dispatchEvent(new CustomEvent("remove-item", {
-				bubbles: true,
-				detail: { id: this.dataset.id }
-			}));
-	}
+    async updateDisplay() {
+        this.appendChild(this.interpolateDom({
+            $template: "",
+            editing: this.dataset.edit !== undefined ? "editing" : null,
+            display: this.dataset.edit === undefined ? {
+                $template: "display",
+                ...this.dataset,
+                checked: this.dataset.completed !== undefined
+            } : null,
+            edit: this.dataset.edit !== undefined ? {
+                $template: "edit",
+                ...this.dataset
+            } : null
+        }));
 
-	handleKeyUp = event => {
-		switch (event.key) {
-			case "Enter":
-				if (event.target.value !== this.dataset.title) {
-					if (!event.target.value)
-						this.dispatchEvent(new CustomEvent("remove-item", {
-							bubbles: true,
-							detail: { id: this.dataset.id }
-						}));
-					else
-						this.dispatchEvent(new CustomEvent("update-item", {
-							bubbles: true,
-							detail: {
-								id: this.dataset.id,
-								title: event.target.value
-							}
-						}));
-				}
-				this.querySelector(".edit-todo-input").blur();
-				break;
-			case "Esc":
-				this.querySelector(".edit-todo-input").blur();
-				break;
-		}
-	}
+        if (this.dataset.edit !== undefined) {
+            const el = this.querySelector(".edit-todo-input");
+            el.focus();
+            el.addEventListener("blur", this.handleBlur);
+        }
+    }
+
+    handleBlur = event => {
+        event.currentTarget.removeEventListener("blur", this.handleBlur);
+        delete this.dataset.edit;
+    }
+
+    handleChange = event => {
+        if (event.target.matches(".toggle-todo-input"))
+            this.closest("todo-app").toggleItem({
+                id: this.dataset.id,
+                completed: event.target.checked
+            });
+    }
+
+    handleClick = event => {
+        if (event.target.matches(".todo-item-text")) {
+            if (this.dataset.edit == undefined) {
+                const t = new Date().getTime();
+                const x = this.textClickTime ? t - this.textClickTime : 0;
+                this.textClickTime = t;
+                if (x > 0 && x < 500)
+                    this.dataset.edit = "";
+            }
+        } else if (event.target.matches(".remove-todo-button"))
+            this.closest("todo-app").removeItem({ id: this.dataset.id });
+    }
+
+    handleKeyUp = event => {
+        switch (event.key) {
+            case "Enter":
+                if (event.target.value !== this.dataset.title) {
+                    const a = this.closest("todo-app");
+                    if (!event.target.value)
+                        a.removeItem({ id: this.dataset.id });
+                    else
+                        a.updateItem({
+                            id: this.dataset.id,
+                            title: event.target.value
+                        });
+                }
+                this.querySelector(".edit-todo-input").blur();
+                break;
+
+            case "Esc":
+                this.querySelector(".edit-todo-input").blur();
+                break;
+        }
+    }
 }

@@ -26,7 +26,6 @@ package com.janilla.todomvc.test;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.janilla.todomvc.frontend.TodoMvcFrontend;
 import com.janilla.web.Handle;
 
 @Handle(path = "/test")
@@ -34,7 +33,11 @@ public class Test {
 
 	protected static final AtomicBoolean ONGOING = new AtomicBoolean();
 
-	public TodoMvcFrontend main;
+//	protected final TodoMvcFrontend frontend;
+//
+//	public Test(TodoMvcFrontend frontend) {
+//		this.frontend = frontend;
+//	}
 
 	@Handle(method = "POST", path = "start")
 	public void start() throws IOException {

@@ -25,88 +25,93 @@ import WebComponent from "./web-component.js";
 
 export default class TodoApp extends WebComponent {
 
-	static get templateNames() {
-		return ["todo-app"];
-	}
+    static get templateNames() {
+        return ["todo-app"];
+    }
 
-	data = [];
+    connectedCallback() {
+        super.connectedCallback();
 
-	connectedCallback() {
-		super.connectedCallback();
-		addEventListener("hashchange", this.handleHashChange);
-		this.addEventListener("add-item", this.handleAddItem);
-		this.addEventListener("clear-completed", this.handleClearCompleted);
-		this.addEventListener("remove-item", this.handleRemoveItem);
-		this.addEventListener("toggle-all", this.handleToggleAll);
-		this.addEventListener("toggle-item", this.handleToggleItem);
-		this.addEventListener("update-item", this.handleUpdateItem);
-	}
+        const s = this.customState;
+        s.data = [];
+        s.totalItems = 0;
+        s.activeItems = 0;
+        s.completedItems = 0;
+        s.filter = "all";
 
-	disconnectedCallback() {
-		super.disconnectedCallback();
-		removeEventListener("hashchange", this.handleHashChange);
-		this.removeEventListener("add-item", this.handleAddItem);
-		this.removeEventListener("clear-completed", this.handleClearCompleted);
-		this.removeEventListener("remove-item", this.handleRemoveItem);
-		this.removeEventListener("toggle-all", this.handleToggleAll);
-		this.removeEventListener("toggle-item", this.handleToggleItem);
-		this.removeEventListener("update-item", this.handleUpdateItem);
-	}
+        this.addEventListener("datachanged", this.handleDataChanged);
+        addEventListener("hashchange", this.handleHashChange);
+    }
 
-	async updateDisplay() {
-		const t = this.data.length;
-		const a = this.data.reduce((x, y) => y.completed ? x : x + 1, 0);
-		const c = t - a;
-		this.appendChild(this.interpolateDom({
-			$template: "",
-			totalItems: t,
-			activeItems: a,
-			completedItems: c,
-			filter: location.hash.split("/")[1] || "all",
-		}));
-	}
+    disconnectedCallback() {
+        this.removeEventListener("datachanged", this.handleDataChanged);
+        removeEventListener("hashchange", this.handleHashChange);
 
-	handleAddItem = event => {
-		const { detail: item } = event;
-		this.data.push(item);
-		this.requestDisplay();
-	}
+        super.disconnectedCallback();
+    }
 
-	handleClearCompleted = _ => {
-		for (let i = this.data.length - 1; i >= 0; i--)
-			if (this.data[i].completed)
-				this.data.splice(i, 1);
-		this.requestDisplay();
-	}
+    async updateDisplay() {
+        const s = this.customState;
+        this.appendChild(this.interpolateDom({
+            $template: "",
+            list: s.totalItems !== 0 ? { $template: "list" } : null
+        }));
+    }
 
-	handleHashChange = _ => {
-		this.requestDisplay();
-	}
+    addItem(item) {
+        this.customState.data.push(item);
+        this.dispatchEvent(new Event("datachanged"));
+    }
 
-	handleRemoveItem = event => {
-		const { detail: { id } } = event;
-		for (let i = this.data.length - 1; i >= 0; i--)
-			if (this.data[i].id === id)
-				this.data.splice(i, 1);
-		this.requestDisplay();
-	}
+    clearCompleted() {
+        const d = this.customState.data;
+        for (let i = d.length - 1;i >= 0;i--)
+            if (d[i].completed)
+                d.splice(i, 1);
 
-	handleToggleItem = event => {
-		const { detail: item } = event;
-		this.data.find(x => x.id === item.id).completed = item.completed;
-		this.requestDisplay();
-	}
+        this.dispatchEvent(new Event("datachanged"));
+    }
 
-	handleToggleAll = event => {
-		const { detail: { completed } } = event;
-		this.data.forEach(x => x.completed = completed);
-		this.requestDisplay();
-		this.querySelector("todo-list").requestDisplay();
-	}
+    handleDataChanged = () => {
+        const s = this.customState;
+        s.totalItems = s.data.length;
+        s.activeItems = s.data.reduce((x, y) => y.completed ? x : x + 1, 0);
+        s.completedItems = s.totalItems - s.activeItems;
 
-	handleUpdateItem = event => {
-		const { detail: item } = event;
-		this.data.find(x => x.id === item.id).title = item.title;
-		this.querySelector("todo-list").requestDisplay();
-	}
+        this.requestDisplay();
+    }
+
+    handleHashChange = _ => {
+        const h1 = location.hash.split("/")[1];
+        this.customState.filter = h1?.length ? h1 : "all";
+
+        this.dispatchEvent(new Event("filterchanged"));
+    }
+
+    removeItem(item) {
+        const d = this.customState.data;
+        for (let i = d.length - 1;i >= 0;i--)
+            if (d[i].id === item.id)
+                d.splice(i, 1);
+
+        this.dispatchEvent(new Event("datachanged"));
+    }
+
+    toggleAll(item) {
+        this.customState.data.forEach(x => x.completed = item.completed);
+
+        this.dispatchEvent(new Event("datachanged"));
+    }
+
+    toggleItem(item) {
+        this.customState.data.find(x => x.id === item.id).completed = item.completed;
+
+        this.dispatchEvent(new Event("datachanged"));
+    }
+
+    updateItem(item) {
+        this.customState.data.find(x => x.id === item.id).title = item.title;
+
+        this.dispatchEvent(new Event("datachanged"));
+    }
 }

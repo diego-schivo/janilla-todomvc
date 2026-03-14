@@ -25,23 +25,45 @@ import WebComponent from "./web-component.js";
 
 export default class TodoList extends WebComponent {
 
-	static get observedAttributes() {
-		return ["data-filter", "data-total-items"];
-	}
+    static get templateNames() {
+        return ["todo-list"];
+    }
 
-	static get templateNames() {
-		return ["todo-list"];
-	}
+    connectedCallback() {
+        super.connectedCallback();
 
-	async updateDisplay() {
-		this.appendChild(this.interpolateDom({
-			$template: "",
-			display: parseInt(this.dataset.totalItems) ? "block" : "none",
-			items: this.closest("todo-app").data.map(x => ({
-				$template: "item",
-				...x,
-				display: this.dataset.filter === "all" || x.completed === (this.dataset.filter === "completed") ? "block" : "none"
-			}))
-		}));
-	}
+        const s = this.customState;
+        s.app = this.closest("todo-app");
+        s.app.addEventListener("datachanged", this.handleDataChanged);
+        s.app.addEventListener("filterchanged", this.handleFilterChanged);
+    }
+
+    disconnectedCallback() {
+        const s = this.customState;
+        s.app.removeEventListener("datachanged", this.handleDataChanged);
+        s.app.removeEventListener("filterchanged", this.handleFilterChanged);
+
+        super.disconnectedCallback();
+    }
+
+    async updateDisplay() {
+        const as = this.customState.app.customState;
+        this.appendChild(this.interpolateDom({
+            $template: "",
+            items: as.data
+                .filter(x => as.filter === "all" || x.completed === (as.filter === "completed"))
+                .map(x => ({
+                    $template: "item",
+                    ...x
+                }))
+        }));
+    }
+
+    handleDataChanged = () => {
+        this.requestDisplay();
+    }
+
+    handleFilterChanged = () => {
+        this.requestDisplay();
+    }
 }

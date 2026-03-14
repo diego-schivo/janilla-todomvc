@@ -42,6 +42,7 @@ import javax.net.ssl.SSLContext;
 import com.janilla.http.HttpClient;
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpServer;
+import com.janilla.ioc.DefaultDiFactory;
 import com.janilla.ioc.DiFactory;
 import com.janilla.java.Java;
 import com.janilla.todomvc.frontend.TodoMvcFrontend;
@@ -54,20 +55,22 @@ import com.janilla.web.Render;
 import com.janilla.web.RenderableFactory;
 import com.janilla.web.ResourceMap;
 
-@Render(template = "index.html")
+@Render(template = "index", resource = "/index.html")
 public class TodoMvcTest {
+
+	public static final String[] DI_PACKAGES = { "com.janilla.web", "com.janilla.todomvc.test" };
 
 	public static void main(String[] args) {
 		IO.println(ProcessHandle.current().pid());
-		var f = new DiFactory(Stream.of("com.janilla.web", TodoMvcTest.class.getPackageName())
-				.flatMap(x -> Java.getPackageClasses(x, false).stream()).toList());
+		var f = new DefaultDiFactory(
+				Arrays.stream(DI_PACKAGES).flatMap(x -> Java.getPackageClasses(x, false).stream()).toList());
 		serve(f, args.length > 0 ? args[0] : null);
 	}
 
 	protected static void serve(DiFactory diFactory, String configurationPath) {
 		TodoMvcTest a;
 		{
-			a = diFactory.create(diFactory.actualType(TodoMvcTest.class),
+			a = diFactory.newInstance(diFactory.classFor(TodoMvcTest.class),
 					Java.hashMap("diFactory", diFactory, "configurationFile",
 							configurationPath != null ? Path.of(configurationPath.startsWith("~")
 									? System.getProperty("user.home") + configurationPath.substring(1)
@@ -96,7 +99,7 @@ public class TodoMvcTest {
 		HttpServer s;
 		{
 			var p = Integer.parseInt(a.configuration.getProperty("todomvc.server.port"));
-			s = a.diFactory.create(a.diFactory.actualType(HttpServer.class),
+			s = a.diFactory.newInstance(a.diFactory.classFor(HttpServer.class),
 					Map.of("sslContext", c, "endpoint", new InetSocketAddress(p), "handler", a.handler));
 		}
 		s.serve();
@@ -106,11 +109,11 @@ public class TodoMvcTest {
 
 	protected final DiFactory diFactory;
 
+	protected final TodoMvcFrontend frontend;
+
 	protected final HttpHandler handler;
 
 	protected final InvocationResolver invocationResolver;
-
-	protected final TodoMvcFrontend main;
 
 	protected final RenderableFactory renderableFactory;
 
@@ -119,17 +122,17 @@ public class TodoMvcTest {
 	public TodoMvcTest(DiFactory diFactory, Path configurationFile) {
 		this.diFactory = diFactory;
 		diFactory.context(this);
-		configuration = diFactory.create(diFactory.actualType(Properties.class),
+		configuration = diFactory.newInstance(diFactory.classFor(Properties.class),
 				Collections.singletonMap("file", configurationFile));
 
 		{
-			var f = new DiFactory(Stream.of("com.janilla.web", TodoMvcFrontend.class.getPackageName())
+			var f = new DefaultDiFactory(Arrays.stream(TodoMvcFrontend.DI_PACKAGES)
 					.flatMap(x -> Java.getPackageClasses(x, false).stream()).toList());
-			main = diFactory.create(diFactory.actualType(TodoMvcFrontend.class),
+			frontend = diFactory.newInstance(diFactory.classFor(TodoMvcFrontend.class),
 					Java.hashMap("diFactory", f, "configurationFile", configurationFile));
 		}
 
-		invocationResolver = diFactory.create(diFactory.actualType(InvocationResolver.class),
+		invocationResolver = diFactory.newInstance(diFactory.classFor(InvocationResolver.class),
 				Map.of("invocables",
 						diFactory.types().stream()
 								.flatMap(x -> Arrays.stream(x.getMethods())
@@ -140,18 +143,18 @@ public class TodoMvcTest {
 							var y = diFactory.context();
 //							IO.println("x=" + x + ", y=" + y);
 							return x.isAssignableFrom(y.getClass()) ? diFactory.context()
-									: diFactory.create(diFactory.actualType(x));
+									: diFactory.newInstance(diFactory.classFor(x));
 						}));
-		resourceMap = diFactory.create(diFactory.actualType(ResourceMap.class),
-				Map.of("paths", Map.of("", Stream.of("com.janilla.frontend", TodoMvcTest.class.getPackageName())
+		resourceMap = diFactory.newInstance(diFactory.classFor(ResourceMap.class),
+				Map.of("paths", Map.of("", Stream.of("com.janilla.frontend", "com.janilla.todomvc.test")
 						.flatMap(x -> Java.getPackagePaths(x, false).filter(Files::isRegularFile)).toList())));
-		renderableFactory = diFactory.create(diFactory.actualType(RenderableFactory.class));
+		renderableFactory = diFactory.newInstance(diFactory.classFor(RenderableFactory.class));
 		{
-			var f = diFactory.create(diFactory.actualType(ApplicationHandlerFactory.class));
+			var f = diFactory.newInstance(diFactory.classFor(ApplicationHandlerFactory.class));
 			handler = ex -> {
 //				IO.println(
 //						"TodoMvcTest, " + ex.request().getPath() + ", Test.ongoing=" + Test.ongoing.get());
-				var h2 = Test.ONGOING.get() && !ex.request().getPath().startsWith("/test/") ? main.handler()
+				var h2 = Test.ONGOING.get() && !ex.request().getPath().startsWith("/test/") ? frontend.handler()
 						: (HttpHandler) y -> {
 							var h = f.createHandler(Objects.requireNonNullElse(y.exception(), y.request()));
 							if (h == null)
@@ -176,16 +179,16 @@ public class TodoMvcTest {
 		return diFactory;
 	}
 
+	public TodoMvcFrontend frontend() {
+		return frontend;
+	}
+
 	public HttpHandler handler() {
 		return handler;
 	}
 
 	public InvocationResolver invocationResolver() {
 		return invocationResolver;
-	}
-
-	public TodoMvcFrontend main() {
-		return main;
 	}
 
 	public RenderableFactory renderableFactory() {
