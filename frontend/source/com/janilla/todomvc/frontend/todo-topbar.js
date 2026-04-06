@@ -21,10 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import WebComponent from "./web-component.js";
+import WebComponent from "base/web-component";
 import { nanoid } from "./static/scripts/nanoid.js";
 
 export default class TodoTopbar extends WebComponent {
+
+    static get moduleUrl() {
+        return import.meta.url;
+    }
 
     static get templateNames() {
         return ["todo-topbar"];

@@ -35,10 +35,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
 
+import com.janilla.frontend.IndexFactory;
 import com.janilla.http.HttpClient;
 import com.janilla.http.HttpHandler;
 import com.janilla.http.HttpServer;
@@ -46,35 +46,31 @@ import com.janilla.ioc.DefaultDiFactory;
 import com.janilla.ioc.DiFactory;
 import com.janilla.java.Java;
 import com.janilla.web.ApplicationHandlerFactory;
-import com.janilla.web.Handle;
 import com.janilla.web.Invocable;
 import com.janilla.web.InvocationResolver;
 import com.janilla.web.NotFoundException;
-import com.janilla.web.Render;
 import com.janilla.web.RenderableFactory;
 import com.janilla.web.ResourceMap;
 
-@Render(template = "index", resource = "/index.html")
+//@Render(template = "index", resource = "/index.html")
 public class TodoMvcFrontend {
 
 	public static final String[] DI_PACKAGES = { "com.janilla.web", "com.janilla.todomvc.frontend" };
 
 	public static void main(String[] args) {
 		IO.println(ProcessHandle.current().pid());
+
 		var f = new DefaultDiFactory(
-				Arrays.stream(DI_PACKAGES).flatMap(x -> Java.getPackageClasses(x, false).stream()).toList());
-		serve(f, args.length > 0 ? args[0] : null);
+				Arrays.stream(DI_PACKAGES).flatMap(x -> Java.getPackageClasses(x).stream()).toList());
+		serve(f, args.length != 0 ? args[0] : null);
 	}
 
 	protected static void serve(DiFactory diFactory, String configurationPath) {
-		TodoMvcFrontend a;
-		{
-			a = diFactory.newInstance(diFactory.classFor(TodoMvcFrontend.class),
-					Java.hashMap("diFactory", diFactory, "configurationFile",
-							configurationPath != null ? Path.of(configurationPath.startsWith("~")
-									? System.getProperty("user.home") + configurationPath.substring(1)
-									: configurationPath) : null));
-		}
+		var a = diFactory.newInstance(diFactory.classFor(TodoMvcFrontend.class),
+				Java.hashMap("diFactory", diFactory, "configurationFile",
+						configurationPath != null ? Path.of(configurationPath.startsWith("~")
+								? System.getProperty("user.home") + configurationPath.substring(1)
+								: configurationPath) : null));
 
 		SSLContext c;
 		{
@@ -110,6 +106,8 @@ public class TodoMvcFrontend {
 
 	protected final HttpHandler handler;
 
+	protected final IndexFactory indexFactory;
+
 	protected final InvocationResolver invocationResolver;
 
 	protected final RenderableFactory renderableFactory;
@@ -119,9 +117,11 @@ public class TodoMvcFrontend {
 	public TodoMvcFrontend(DiFactory diFactory, Path configurationFile) {
 		this.diFactory = diFactory;
 		diFactory.context(this);
+
 		configuration = diFactory.newInstance(diFactory.classFor(Properties.class),
 				Collections.singletonMap("file", configurationFile));
 
+		indexFactory = diFactory.newInstance(diFactory.classFor(IndexFactory.class));
 		invocationResolver = diFactory.newInstance(diFactory.classFor(InvocationResolver.class),
 				Map.of("invocables",
 						diFactory.types().stream()
@@ -132,12 +132,15 @@ public class TodoMvcFrontend {
 						"instanceResolver", (Function<Class<?>, Object>) x -> {
 							var y = diFactory.context();
 //							IO.println("x=" + x + ", y=" + y);
-							return x.isAssignableFrom(y.getClass()) ? diFactory.context()
-									: diFactory.newInstance(diFactory.classFor(x));
+							return x.isAssignableFrom(y.getClass()) ? y : diFactory.newInstance(diFactory.classFor(x));
 						}));
+//		resourceMap = diFactory.newInstance(diFactory.classFor(ResourceMap.class),
+//				Map.of("paths", Map.of("", Stream.of("com.janilla.frontend", TodoMvcFrontend.class.getPackageName())
+//						.flatMap(x -> Java.getPackagePaths(x).filter(Files::isRegularFile)).toList())));
 		resourceMap = diFactory.newInstance(diFactory.classFor(ResourceMap.class),
-				Map.of("paths", Map.of("", Stream.of("com.janilla.frontend", TodoMvcFrontend.class.getPackageName())
-						.flatMap(x -> Java.getPackagePaths(x, false).filter(Files::isRegularFile)).toList())));
+				Map.of("paths", Map.of("/base",
+						Java.getPackagePaths("com.janilla.frontend").filter(Files::isRegularFile).toList(), "",
+						Java.getPackagePaths("com.janilla.todomvc.frontend").filter(Files::isRegularFile).toList())));
 		renderableFactory = diFactory.newInstance(diFactory.classFor(RenderableFactory.class));
 		{
 			var f = diFactory.newInstance(diFactory.classFor(ApplicationHandlerFactory.class));
@@ -150,10 +153,10 @@ public class TodoMvcFrontend {
 		}
 	}
 
-	@Handle(method = "GET", path = "/")
-	public TodoMvcFrontend application() {
-		return this;
-	}
+//	@Handle(method = "GET", path = "/")
+//	public TodoMvcFrontend application() {
+//		return this;
+//	}
 
 	public Properties configuration() {
 		return configuration;
@@ -165,6 +168,10 @@ public class TodoMvcFrontend {
 
 	public HttpHandler handler() {
 		return handler;
+	}
+
+	public IndexFactory indexFactory() {
+		return indexFactory;
 	}
 
 	public InvocationResolver invocationResolver() {
